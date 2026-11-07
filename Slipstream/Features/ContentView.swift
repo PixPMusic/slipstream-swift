@@ -475,6 +475,12 @@ struct FeedView: View {
                 if let banner, let url = banner.url {
                     ChannelBanner(url: url, aspectRatio: banner.width.flatMap { width in banner.height.map { CGFloat(width) / CGFloat(max(1, $0)) } } ?? 3.83)
                         .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { bannerHeight = $0 }
+                        #if os(iOS)
+                        // Track the banner itself across restored windows and size-class changes.
+                        .onGeometryChange(for: Bool.self) {
+                            $0.frame(in: .named("feedScroll")).maxY < 52
+                        } action: { bannerScrolledAway = $0 }
+                        #endif
                 }
                 LazyVGrid(columns: gridColumns, alignment: .leading, spacing: 18) {
                     ForEach(posts) { post in
@@ -688,11 +694,15 @@ private struct FeedBannerChrome: ViewModifier {
     #endif
     func body(content: Content) -> some View {
         Group {
+            #if os(macOS)
             if #available(macOS 15.0, iOS 18.0, *) {
                 content.onScrollGeometryChange(for: Bool.self) { geometry in
                     enabled && bannerHeight > 0 && geometry.visibleRect.minY > bannerHeight - 52
                 } action: { _, away in scrolledAway = away }
             } else { content }
+            #else
+            content
+            #endif
         }
         #if os(macOS)
         .ignoresSafeArea(.container, edges: enabled || model.windowFullscreen ? .top : [])
