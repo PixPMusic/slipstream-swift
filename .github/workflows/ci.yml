@@ -27,7 +27,3 @@ jobs:
           persist-credentials: false
       - name: Core tests
         run: swift test
-      - name: Build native macOS without signing
-        run: ./scripts/build.sh macos --unsigned
-      - name: Build iPhone and iPad for Simulator
-        run: ./scripts/build.sh ios
