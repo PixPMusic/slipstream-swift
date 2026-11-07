@@ -507,7 +507,7 @@ struct FeedView: View {
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         #endif
-        .modifier(FeedSearch(text: $search, width: feedWidth < 700 ? 160 : 240, refresh: {
+        .modifier(FeedSearch(text: $search, width: feedWidth < 700 ? 160 : 240, compact: feedWidth < 700, refresh: {
             Task { await model.loadCreators(); await load(reset: true) }
         }))
         .task(id: [search, channel?.id ?? ""] + creators.map(\.id)) {
