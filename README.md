@@ -4,7 +4,7 @@ A native SwiftUI Floatplane client for Mac, iPhone, and iPad. Browse subscribed 
 
 ## Build
 
-Use Xcode 26 or later. Deployment targets are macOS 14 and iOS/iPadOS 17; newer glass APIs have availability guards. Mac Catalyst is disabled.
+Use Xcode 27.1 or later. Deployment targets are macOS 14 and iOS/iPadOS 17; newer APIs have runtime availability guards, but compiling the Duo hinge and control rail support requires the iOS 27.1 SDK. Mac Catalyst is disabled.
 
 A clean checkout can build without an Apple account:
 
