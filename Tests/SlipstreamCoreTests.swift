@@ -1,4 +1,5 @@
 import Foundation
+import AVFoundation
 import Testing
 @testable import SlipstreamCore
 
@@ -276,4 +277,30 @@ private func socialAPI() throws -> FloatplaneAPI {
 @Test func imageSelectionUsesTheLargestAvailableFile() throws {
     let fixture = #"{"imageFiles":[{"path":"https://example.com/small.jpg","width":320},{"path":"https://example.com/original.jpg","width":2400}]}"#
     #expect(try JSONDecoder().decode(PictureContent.self, from: Data(fixture.utf8)).originalURL?.lastPathComponent == "original.jpg")
+}
+
+@MainActor @Test func closingPostPlaybackReleasesTheItemAndInvalidatesPendingObservations() throws {
+    let post = try JSONDecoder().decode(Post.self, from: Data(#"{"id":"fixture","title":"Fixture","releaseDate":"2026-11-05T12:00:00.000Z","creator":{"id":"creator","title":"Studio"}}"#.utf8))
+    let playback = PostPlayback(post: post)
+    let item = AVPlayerItem(asset: AVMutableComposition())
+    playback.player.replaceCurrentItem(with: item)
+    let generation = playback.playbackGeneration
+    #expect(playback.player.currentItem === item)
+
+    playback.stop()
+
+    #expect(playback.closed)
+    #expect(playback.player.currentItem == nil)
+    #expect(playback.player.rate == 0)
+    #expect(playback.playbackGeneration != generation)
+}
+
+@MainActor @Test func reopeningTheSamePostCreatesADistinctPlaybackDestination() throws {
+    let post = try JSONDecoder().decode(Post.self, from: Data(#"{"id":"fixture","title":"Fixture","releaseDate":"2026-11-05T12:00:00.000Z","creator":{"id":"creator","title":"Studio"}}"#.utf8))
+    let first = PostPlayback(post: post)
+    let reopened = PostPlayback(post: post)
+    #expect(first != reopened)
+    #expect(Set([first, reopened]).count == 2)
+    first.stop()
+    #expect(!reopened.closed)
 }
