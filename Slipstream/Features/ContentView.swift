@@ -202,6 +202,9 @@ private struct LibrarySidebar: View {
             .clipped()
             AccountFooter()
         }
+        #if os(iOS)
+        .ignoresSafeArea(.container, edges: .bottom)
+        #endif
         .navigationTitle("Slipstream")
         .frame(minWidth: 240)
         .navigationSplitViewColumnWidth(min: 240, ideal: 260, max: 320)
