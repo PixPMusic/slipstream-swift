@@ -345,7 +345,18 @@ private final class PlaybackSurface: UIView {
             }
         }
     }
-    override func viewDidAppear(_ animated: Bool) { super.viewDidAppear(animated); session.reveal() }
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        // Fullscreen hides the status bar. Recalculate the inline header after
+        // dismissal restores the window's safe area, even if our size is unchanged.
+        view.setNeedsLayout()
+        view.layoutIfNeeded()
+        session.reveal()
+    }
+    override func viewSafeAreaInsetsDidChange() {
+        super.viewSafeAreaInsetsDidChange()
+        view.setNeedsLayout()
+    }
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         liveSurface?.player = session.live
