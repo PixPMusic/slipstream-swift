@@ -2,6 +2,8 @@
 SLIPSTREAM_BUNDLE_ID = com.example.Slipstream
 SLIPSTREAM_KEYCHAIN_SERVICE = $(SLIPSTREAM_BUNDLE_ID).session
 SLIPSTREAM_DEVELOPMENT_IDENTITY = Apple Development
+SLIPSTREAM_CODE_SIGN_STYLE = Automatic
+SLIPSTREAM_CODE_SIGN_IDENTITY = Apple Development
 
 // Personal identifiers and signing configuration belong only in this ignored file.
 #include? "Local.xcconfig"
