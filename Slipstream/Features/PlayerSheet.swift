@@ -359,7 +359,8 @@ struct PlayerChrome: ViewModifier {
             .navigationBarBackButtonHidden(rail)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar(immersive && !rail ? .hidden : .visible, for: .navigationBar)
-            .ignoresSafeArea(.container, edges: immersive ? .top : [])
+            // Keep inline iPhone video below the notch, even with navigation chrome hidden.
+            .ignoresSafeArea(.container, edges: immersive && UIDevice.current.userInterfaceIdiom == .pad ? .top : [])
 
             #endif
     }
