@@ -201,6 +201,9 @@ private struct LibrarySidebar: View {
             .labelStyle(.titleAndIcon)
             .clipped()
             AccountFooter()
+                #if os(iOS)
+                .padding(.bottom, 16)
+                #endif
         }
         #if os(iOS)
         .ignoresSafeArea(.container, edges: .bottom)
