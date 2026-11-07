@@ -5,7 +5,7 @@ import Observation
 @preconcurrency import AmazonIVSPlayer
 
 /// One playback session shared by the inline and fullscreen surfaces.
-@MainActor @Observable private final class TouchPlayback: NSObject, @preconcurrency IVSPlayer.Delegate {
+@MainActor @Observable final class TouchPlayback: NSObject, @preconcurrency IVSPlayer.Delegate {
     let player: AVPlayer
     @ObservationIgnored let live: IVSPlayer?
     @ObservationIgnored private let liveSource: URL?
@@ -163,6 +163,30 @@ import Observation
     }
 }
 
+struct PlayerRailToolbar: ViewModifier {
+    var session: TouchPlayback?
+    let enabled: Bool
+    let close: () -> Void
+    var fullscreen = false
+
+    func body(content: Content) -> some View {
+        content
+            .navigationBarBackButtonHidden(enabled)
+            .toolbar {
+                if enabled, let session {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button(fullscreen ? "Exit fullscreen" : "Back", systemImage: fullscreen ? "xmark" : "chevron.left", action: close).tint(.white)
+                    }
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button(session.muted ? "Unmute" : "Mute", systemImage: session.muted ? "speaker.slash.fill" : "speaker.wave.2.fill") {
+                            session.toggleMute()
+                        }.tint(.white)
+                    }
+                }
+            }
+    }
+}
+
 struct NativeVideoPlayer: UIViewControllerRepresentable {
     @Environment(AppModel.self) private var model
     let player: AVPlayer
@@ -174,10 +198,19 @@ struct NativeVideoPlayer: UIViewControllerRepresentable {
     var windowChromeVisible: Bool? = nil
     var liveSource: URL? = nil
 
+    var railChanged: ((TouchPlayback, Bool) -> Void)? = nil
+
+    func onPlayerRailChange(_ action: @escaping (TouchPlayback, Bool) -> Void) -> Self {
+        var copy = self
+        copy.railChanged = action
+        return copy
+    }
     func makeUIViewController(context: Context) -> TouchPlayerController {
         let session = TouchPlayback(player: player, liveSource: liveSource)
         configure(session)
-        return TouchPlayerController(session: session)
+        let controller = TouchPlayerController(session: session)
+        controller.railChanged = railChanged
+        return controller
     }
     func updateUIViewController(_ controller: TouchPlayerController, context: Context) { configure(controller.session) }
     private func configure(_ session: TouchPlayback) {
@@ -211,7 +244,10 @@ private final class PlaybackSurface: UIView {
     private let surface = PlaybackSurface()
     private var liveSurface: IVSPlayerView?
     private var pip: AVPictureInPictureController?
-    private var controls: UIHostingController<TouchPlayerControls>?
+    private var controls: UIHostingController<AnyView>?
+    fileprivate var railChanged: ((TouchPlayback, Bool) -> Void)?
+    private var hasRail = false
+    private var controlInsets: EdgeInsets?
     private var closing = false
     private var inlineFrame = CGRect.zero
     private var controlArea: UILayoutGuide?
@@ -249,9 +285,9 @@ private final class PlaybackSurface: UIView {
             else { pip = AVPictureInPictureController(playerLayer: surface.playerLayer) }
             pip?.delegate = self
         }
-        let controls = UIHostingController(rootView: TouchPlayerControls(session: session, fullscreen: fullscreen, canPiP: pip != nil,
+        let controls = UIHostingController(rootView: AnyView(TouchPlayerControls(session: session, fullscreen: fullscreen, canPiP: pip != nil,
             close: { [weak self] in self?.goBack() }, expand: { [weak self] in self?.toggleFullscreen() },
-            pictureInPicture: { [weak self] in self?.togglePiP() }))
+            pictureInPicture: { [weak self] in self?.togglePiP() })))
         self.controls = controls
         addChild(controls)
         // Insets are applied once, in player coordinates, below.
@@ -279,7 +315,30 @@ private final class PlaybackSurface: UIView {
                                 leading: max(16, safe.left + 12, windowMargin),
                                 bottom: max(12, safe.bottom + 8),
                                 trailing: max(16, safe.right + 12))
-        if controls?.rootView.insets != insets { controls?.rootView.insets = insets }
+        let rail: Bool
+        if #available(iOS 27.1, *) { rail = window.traitCollection.verticalBarEdge != .unspecified && (fullscreen || railChanged != nil) }
+        else { rail = false }
+        guard controlInsets != insets || hasRail != rail else { return }
+        controlInsets = insets
+        let content = TouchPlayerControls(insets: insets, hasRail: rail, session: session, fullscreen: fullscreen, canPiP: pip != nil,
+            close: { [weak self] in self?.goBack() }, expand: { [weak self] in self?.toggleFullscreen() },
+            pictureInPicture: { [weak self] in self?.togglePiP() })
+        if #available(iOS 27.1, *), fullscreen && rail {
+            controls?.rootView = AnyView(NavigationStack {
+                content.ignoresSafeArea().containerBackground(.clear, for: .navigation)
+                    .modifier(PlayerRailToolbar(session: session, enabled: rail, close: { [weak self] in self?.goBack() }, fullscreen: true))
+                    .toolbar(rail ? .visible : .hidden, for: .navigationBar)
+            })
+        } else {
+            controls?.rootView = AnyView(content)
+        }
+        if hasRail != rail {
+            hasRail = rail
+            Task { @MainActor [weak self] in
+                guard let self else { return }
+                self.railChanged?(self.session, rail)
+            }
+        }
     }
     override func viewDidAppear(_ animated: Bool) { super.viewDidAppear(animated); session.reveal() }
     override func viewWillAppear(_ animated: Bool) {
@@ -362,6 +421,7 @@ private final class PlaybackSurface: UIView {
 
 private struct TouchPlayerControls: View {
     var insets = EdgeInsets(top: 12, leading: 16, bottom: 12, trailing: 16)
+    var hasRail = false
     @Bindable var session: TouchPlayback
     let fullscreen: Bool
     let canPiP: Bool
@@ -413,19 +473,21 @@ private struct TouchPlayerControls: View {
                     }.padding(20).modifier(TouchGlassSurface())
                 }
                 VStack {
-                    HStack {
-                        if !fullscreen && session.sidebarHidden && UIDevice.current.userInterfaceIdiom == .pad {
-                            TouchPlayerButton(title: "Show Sidebar", symbol: "sidebar.left") {
-                                session.revealSidebar?(); session.reveal()
+                    if !hasRail {
+                        HStack {
+                            if !fullscreen && session.sidebarHidden && UIDevice.current.userInterfaceIdiom == .pad {
+                                TouchPlayerButton(title: "Show Sidebar", symbol: "sidebar.left") {
+                                    session.revealSidebar?(); session.reveal()
+                                }
+                            }
+                            TouchPlayerButton(title: fullscreen ? "Exit fullscreen" : "Back", symbol: fullscreen ? "xmark" : "chevron.left", action: close)
+                            Spacer()
+                            TouchPlayerButton(title: session.muted ? "Unmute" : "Mute", symbol: session.muted ? "speaker.slash.fill" : "speaker.wave.2.fill") {
+                                session.toggleMute()
                             }
                         }
-                        TouchPlayerButton(title: fullscreen ? "Exit fullscreen" : "Back", symbol: fullscreen ? "xmark" : "chevron.left", action: close)
-                        Spacer()
-                        TouchPlayerButton(title: session.muted ? "Unmute" : "Mute", symbol: session.muted ? "speaker.slash.fill" : "speaker.wave.2.fill") {
-                            session.toggleMute()
-                        }
+                        .padding(.leading, headerLeading).padding(.trailing, headerTrailing)
                     }
-                    .padding(.leading, headerLeading).padding(.trailing, headerTrailing)
                     Spacer()
                     TouchTransportBar(session: session, fullscreen: fullscreen, canPiP: canPiP, compact: availableWidth < 900, showTotalTime: availableWidth >= 380, expand: expand, pictureInPicture: pictureInPicture)
                         .padding(.leading, transportLeading).padding(.trailing, transportTrailing)
