@@ -16,7 +16,8 @@ struct ContentView: View {
                 ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if model.user != nil || model.demo {
                 #if os(iOS)
-                if horizontalSizeClass == .compact {
+                // Let iPad collapse its split view without replacing the feed hierarchy.
+                if horizontalSizeClass == .compact && UIDevice.current.userInterfaceIdiom != .pad {
                     NavigationStack(path: $compactPath) {
                         LibrarySidebar(selection: sidebarSelection, navigate: { compactPath = [$0] })
                             .navigationDestination(for: String.self) { value in
@@ -43,7 +44,7 @@ struct ContentView: View {
             }
         }
         .onChange(of: horizontalSizeClass) { _, sizeClass in
-            if sizeClass == .compact { compactPath = [selection] }
+            if sizeClass == .compact && UIDevice.current.userInterfaceIdiom != .pad { compactPath = [selection] }
         }
         #endif
         #if os(macOS)
