@@ -6,6 +6,10 @@ struct PlayerSheet: View {
     @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss
     let post: Post
+    #if os(iOS)
+    @State private var railSession: TouchPlayback?
+    @State private var hasRail = false
+    #endif
     @State private var controlsVisible = false
     @State private var presentingFullscreen = false
     @State private var playerScrolledAway = false
@@ -45,12 +49,22 @@ struct PlayerSheet: View {
     private var channelIcon: URL? {
         post.channel.flatMap { model.channelsByID[$0.id]?.icon?.url } ?? post.creator.icon?.url
     }
+    private var usesRail: Bool {
+        #if os(iOS)
+        hasRail
+        #else
+        false
+        #endif
+    }
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
                 if loading || selectedMedia?.isPlayable == true {
                     ZStack {
                         NativeVideoPlayer(player: player, onControlsVisibility: { controlsVisible = $0 }, onPresentationChange: { presentingFullscreen = $0 }, qualities: qualities, qualityID: Binding(get: { qualityID }, set: { qualityID = $0; play() }), backAction: { dismiss() }, windowChromeVisible: selectedMedia?.kind == .video ? controlsVisible || playerScrolledAway || !model.sidebarHidden : nil)
+                            #if os(iOS)
+                            .onPlayerRailChange { session, enabled in railSession = session; hasRail = enabled }
+                            #endif
                             .aspectRatio(selectedMedia?.kind == .audio ? 5 : 16 / 9, contentMode: .fit).background(.black)
                         if loading || !playerReady {
                             PostArtwork(url: post.thumbnail?.url)
@@ -75,16 +89,18 @@ struct PlayerSheet: View {
                     }
                     PostMetadataRow(creator: channelName, icon: channelIcon, date: post.date) {
                         HStack(spacing: 10) {
-                            if selectedMedia != nil {
-                                PostDownloadMenu(preparing: preparingDownload, disabled: model.demo, qualities: downloadQualities) { quality in
-                                    model.downloads.start(url: quality.url, title: post.title, fileExtension: downloadExtension)
+                            if !usesRail {
+                                if selectedMedia != nil {
+                                    PostDownloadMenu(preparing: preparingDownload, disabled: model.demo, qualities: downloadQualities) { quality in
+                                        model.downloads.start(url: quality.url, title: post.title, fileExtension: downloadExtension)
+                                    }
                                 }
+                                #if os(macOS)
+                                PostQualityPicker(qualities: qualities, qualityID: Binding(get: { qualityID }, set: { qualityID = $0; play() }))
+                                #endif
+                                PostFeedbackControl(liked: liked, disliked: disliked, likes: likeCount, dislikes: dislikeCount, disabled: liking || model.demo,
+                                                    like: { Task { await toggleReaction(dislike: false) } }, dislike: { Task { await toggleReaction(dislike: true) } })
                             }
-                            #if os(macOS)
-                            PostQualityPicker(qualities: qualities, qualityID: Binding(get: { qualityID }, set: { qualityID = $0; play() }))
-                            #endif
-                            PostFeedbackControl(liked: liked, disliked: disliked, likes: likeCount, dislikes: dislikeCount, disabled: liking || model.demo,
-                                                like: { Task { await toggleReaction(dislike: false) } }, dislike: { Task { await toggleReaction(dislike: true) } })
                         }.controlSize(.regular).fixedSize()
                     }
                     if detail?.media.isEmpty == true, let text = detail?.text ?? post.text { PostDescription(text: Self.plainText(text), collapsible: false) }
@@ -108,8 +124,28 @@ struct PlayerSheet: View {
         .modifier(PlayerScrollTracking(playerHeight: playerHeight, scrolledAway: $playerScrolledAway))
         .modifier(ReadingScrollEdge(reading: readingPost))
         .modifier(ReadingContentClip(reading: readingPost))
-        .modifier(PlayerChrome(hideBack: loading || selectedMedia?.kind == .video, title: post.title, reading: readingPost, immersive: (loading || selectedMedia?.kind == .video) && !playerScrolledAway))
+        .modifier(PlayerChrome(hideBack: loading || selectedMedia?.kind == .video, title: post.title, reading: readingPost, immersive: (loading || selectedMedia?.kind == .video) && !playerScrolledAway, rail: usesRail))
         .modifier(PlayerBackToolbar(visible: (loading || selectedMedia?.kind == .video) && (controlsVisible || playerScrolledAway), nonVideo: !loading && selectedMedia?.kind != .video, action: { dismiss() }))
+        #if os(iOS)
+        .modifier(PlayerRailToolbar(session: railSession, enabled: hasRail, close: { dismiss() }))
+        .toolbar {
+            if hasRail {
+                ToolbarItem(placement: .bottomBar) { Spacer() }
+                ToolbarItem(placement: .bottomBar) {
+                    if selectedMedia != nil {
+                        PostDownloadMenu(preparing: preparingDownload, disabled: model.demo, qualities: downloadQualities) { quality in
+                            model.downloads.start(url: quality.url, title: post.title, fileExtension: downloadExtension)
+                        }
+                    }
+                }
+                if #available(iOS 26.0, *) { ToolbarSpacer(.fixed, placement: .bottomBar) }
+                ToolbarItemGroup(placement: .bottomBar) {
+                    Button(liked ? "Unlike post" : "Like post", systemImage: liked ? "hand.thumbsup.fill" : "hand.thumbsup") { Task { await toggleReaction(dislike: false) } }.disabled(liking || model.demo).tint(.white).accessibilityValue(likeCount.formatted())
+                    Button(disliked ? "Remove dislike" : "Dislike post", systemImage: disliked ? "hand.thumbsdown.fill" : "hand.thumbsdown") { Task { await toggleReaction(dislike: true) } }.disabled(liking || model.demo).tint(.white).accessibilityValue(dislikeCount.formatted())
+                }
+            }
+        }
+        #endif
         #if os(macOS)
         .onChange(of: controlsVisible) { _, value in model.playerControlsVisible = value || playerScrolledAway }
         .onChange(of: playerScrolledAway) { _, value in model.playerControlsVisible = value || controlsVisible }
@@ -307,6 +343,7 @@ struct PlayerChrome: ViewModifier {
     var title = ""
     var reading = false
     var immersive = false
+    var rail = false
     func body(content: Content) -> some View {
         content.navigationBarBackButtonHidden(hideBack)
             #if os(macOS)
@@ -319,9 +356,9 @@ struct PlayerChrome: ViewModifier {
             .modifier(ToolbarTitleVisibility(hidden: !reading))
             .ignoresSafeArea(.container, edges: hideBack ? .top : [])
             #else
-            .navigationBarBackButtonHidden(false)
+            .navigationBarBackButtonHidden(rail)
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar(immersive ? .hidden : .visible, for: .navigationBar)
+            .toolbar(immersive && !rail ? .hidden : .visible, for: .navigationBar)
             .ignoresSafeArea(.container, edges: immersive ? .top : [])
 
             #endif
