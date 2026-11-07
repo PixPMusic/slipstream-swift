@@ -39,7 +39,7 @@ Local archive/upload remains available through `scripts/testflight.sh`; the CI h
 
 ## Updating dependencies
 
-Actions are pinned to full commit SHAs, and Dependabot proposes monthly updates. Xcode's Swift package lockfile records exact dependency revisions. Review workflow and dependency changes before merging them into the signing branch.
+Actions are pinned to full commit SHAs and updated manually. Dependabot updates and CodeRabbit automatic reviews and replies are disabled for this repository. Xcode's Swift package lockfile records exact dependency revisions. Review workflow and dependency changes before merging them into the signing branch.
 
 This separation follows the trust boundary used by [T3 Code's macOS preview workflows](https://github.com/pingdotgg/t3code/tree/main/.github/workflows). Slipstream's Swift build is small enough to rebuild trusted main directly, so it does not need T3 Code's two-stage PR artifact packaging system.
 
