@@ -308,12 +308,13 @@ private final class PlaybackSurface: UIView {
         // Window corner margins can be very large on a folded phone, so reserve
         // those only for the inline iPad window controls that need them.
         let safe = view.safeAreaInsets
-        let windowMargin = !fullscreen && traitCollection.userInterfaceIdiom == .pad
+        let inlinePad = !fullscreen && Device.isPad
+        let windowMargin = inlinePad
             ? controlArea.map { view.convert($0.layoutFrame, from: window).minX } ?? 0 : 0
         // Inline iPad video extends under the status bar, so its own safe area
         // can be empty. Align its 44-point buttons with the navigation row by
         // converting the window's safe-area edge into player coordinates.
-        let headerTop = !fullscreen && traitCollection.userInterfaceIdiom == .pad
+        let headerTop = inlinePad
             ? max(12, view.convert(window.safeAreaLayoutGuide.layoutFrame, from: window).minY)
             : max(12, safe.top + 8)
         let insets = EdgeInsets(top: headerTop,
@@ -452,7 +453,7 @@ private struct TouchPlayerControls: View {
             // A phone's camera reservation only affects one row: the top in
             // portrait and the bottom in landscape. Let the other row span
             // the screen instead of reserving that strip for all controls.
-            let phoneFullscreen = fullscreen && UIDevice.current.userInterfaceIdiom == .phone
+            let phoneFullscreen = fullscreen && Device.isPhone
             let wideHeader = phoneFullscreen && geometry.size.width > geometry.size.height
             let wideTransport = phoneFullscreen && !wideHeader
             let headerLeading = wideHeader ? 16 : insets.leading
@@ -491,7 +492,7 @@ private struct TouchPlayerControls: View {
                 VStack {
                     if !hasRail {
                         HStack {
-                            if !fullscreen && session.sidebarHidden && UIDevice.current.userInterfaceIdiom == .pad {
+                            if !fullscreen && session.sidebarHidden && Device.isPad {
                                 TouchPlayerButton(title: "Show Sidebar", symbol: "sidebar.left") {
                                     session.revealSidebar?(); session.reveal()
                                 }

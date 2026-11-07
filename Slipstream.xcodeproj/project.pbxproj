@@ -27,6 +27,7 @@
 		3E7F6F9076D1714682616837 /* PostPlayback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E897535415D6E8AEB95327 /* PostPlayback.swift */; };
 		3F7FFCFF6619482D86E28705 /* LoginNavigationPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57BD584144D8B2EDF7EA8CB2 /* LoginNavigationPolicy.swift */; };
 		408BCF3F6D958ACFC3549E1A /* ThirdPartyNotices.txt in Resources */ = {isa = PBXBuildFile; fileRef = 0DF775DA1076B274FFC04B02 /* ThirdPartyNotices.txt */; };
+		41524FEFA5D007EBA1AD22EA /* Layout.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB5065A582571086CA305FF9 /* Layout.swift */; };
 		41AA099A40B2AE8253859738 /* PlayerSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB242B932E00B27F8A458081 /* PlayerSheet.swift */; };
 		41F94AA8A5BD72BBEDDCBBC2 /* DemoPlayback.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = A56D3CB0AFF76C764450785A /* DemoPlayback.mp4 */; };
 		450CA2060564CBDA2C33CDC2 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CF53FFE345A469236F78555 /* AppModel.swift */; };
@@ -46,6 +47,7 @@
 		A2C5CE77C12484B6E7A4C05A /* DemoPlayback.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = A56D3CB0AFF76C764450785A /* DemoPlayback.mp4 */; };
 		A47819CDD2320A6DEFB4BDE4 /* SocketIO in Frameworks */ = {isa = PBXBuildFile; productRef = 6A0C4AAC112D524F5554D6FA /* SocketIO */; };
 		ACA2893948C9F5F0CBAB6DD6 /* Emotes.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4A42D5BE1BF20DDC21C4466 /* Emotes.swift */; };
+		B57AA85FF82286DCA2BF860D /* Layout.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB5065A582571086CA305FF9 /* Layout.swift */; };
 		B602B8AC9D2B1A62E799CC15 /* LoginSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3D89271BA8C7B7A7456AA2A /* LoginSheet.swift */; };
 		B7B02124EBD3622A412C79C8 /* SearchField.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0184CAD8EE88CEAD0D69DC1 /* SearchField.swift */; };
 		BA2F957B492CA7BC99B5BD51 /* iOS.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2468D54C41E9DD248562DEB2 /* iOS.xcassets */; };
@@ -87,6 +89,7 @@
 		C66F5D61E57BDC8A23E8EA44 /* EmoteText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmoteText.swift; sourceTree = "<group>"; };
 		D0184CAD8EE88CEAD0D69DC1 /* SearchField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchField.swift; sourceTree = "<group>"; };
 		D4A9F06D2FCF55B9026E24E2 /* AmazonIVSPlayer */ = {isa = PBXFileReference; lastKnownFileType = folder; name = AmazonIVSPlayer; path = Packages/AmazonIVSPlayer; sourceTree = SOURCE_ROOT; };
+		DB5065A582571086CA305FF9 /* Layout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Layout.swift; sourceTree = "<group>"; };
 		DE183808A16C5C64122E9BCF /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -199,6 +202,7 @@
 				29ED3A1DD5E325132B0C4F7A /* DemoData.swift */,
 				71EF7B32901A614D9BAED32F /* DownloadManager.swift */,
 				C66F5D61E57BDC8A23E8EA44 /* EmoteText.swift */,
+				DB5065A582571086CA305FF9 /* Layout.swift */,
 				601A668EC2BA18625B7352F5 /* LiveChat.swift */,
 				1F102766B01D3223F3AAF8E9 /* LiveLibraryView.swift */,
 				B3D89271BA8C7B7A7456AA2A /* LoginSheet.swift */,
@@ -328,6 +332,7 @@
 				187FEC8B39FA0182AEC937E0 /* EmoteText.swift in Sources */,
 				C6689F520CE50CF2A2033918 /* Emotes.swift in Sources */,
 				CF5CCC7641FFEABBB094F854 /* FloatplaneAPI.swift in Sources */,
+				B57AA85FF82286DCA2BF860D /* Layout.swift in Sources */,
 				CD318C6B72E6FA57EC993617 /* LiveChat.swift in Sources */,
 				71740CA900927DB5B4EAEA41 /* LiveLibraryView.swift in Sources */,
 				6E7BE44CE466DC4B524CE7BF /* LoginNavigationPolicy.swift in Sources */,
@@ -355,6 +360,7 @@
 				029A70B8DA5BB8942B0EA721 /* EmoteText.swift in Sources */,
 				ACA2893948C9F5F0CBAB6DD6 /* Emotes.swift in Sources */,
 				454A200DCC6B0C6F3B9FD1D8 /* FloatplaneAPI.swift in Sources */,
+				41524FEFA5D007EBA1AD22EA /* Layout.swift in Sources */,
 				C98376FCFB8EC060199E0C5F /* LiveChat.swift in Sources */,
 				8C523078DF1CE7CD1F53F21A /* LiveLibraryView.swift in Sources */,
 				3F7FFCFF6619482D86E28705 /* LoginNavigationPolicy.swift in Sources */,

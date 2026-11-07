@@ -112,8 +112,7 @@ struct PlayerSheet: View {
         .scrollIndicators(.hidden)
         .coordinateSpace(name: "postScroll")
         .modifier(PlayerScrollTracking(playerHeight: playerHeight, scrolledAway: $playerScrolledAway))
-        .modifier(ReadingScrollEdge(reading: readingPost))
-        .modifier(ReadingContentClip(reading: readingPost))
+        .modifier(ReadingEdge(reading: readingPost))
         .modifier(PlayerChrome(hideBack: playback.loading || isVideo, title: post.title, reading: readingPost, immersive: (playback.loading || isVideo) && !playerScrolledAway, rail: usesRail))
         .modifier(PlayerBackToolbar(visible: (playback.loading || isVideo) && (controlsVisible || playerScrolledAway), nonVideo: !playback.loading && !isVideo, action: { dismiss() }))
         #if os(iOS)
@@ -283,28 +282,24 @@ struct PlayerSheet: View {
     }
 }
 
-struct ReadingContentClip: ViewModifier {
+/// The top edge of scrolling content under the navigation chrome: hard while
+/// reading, soft and hidden while a banner or player sits behind the chrome.
+struct ReadingEdge: ViewModifier {
     let reading: Bool
     func body(content: Content) -> some View {
+        Group {
+            if #available(macOS 26.0, iOS 26.0, *) {
+                content.scrollEdgeEffectStyle(reading ? .hard : .soft, for: .top).scrollEdgeEffectHidden(!reading, for: .top)
+            } else { content }
+        }
         #if os(macOS)
-        content.mask {
+        .mask {
             VStack(spacing: 0) {
                 Rectangle().fill(reading ? .clear : .white).frame(height: 52)
                 Rectangle().fill(.white)
             }
         }
-        #else
-        content
         #endif
-    }
-}
-
-struct ReadingScrollEdge: ViewModifier {
-    let reading: Bool
-    func body(content: Content) -> some View {
-        if #available(macOS 26.0, iOS 26.0, *) {
-            content.scrollEdgeEffectStyle(reading ? .hard : .soft, for: .top).scrollEdgeEffectHidden(!reading, for: .top)
-        } else { content }
     }
 }
 
@@ -350,7 +345,7 @@ struct PlayerChrome: ViewModifier {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar(immersive && !rail ? .hidden : .visible, for: .navigationBar)
             // Keep inline iPhone video below the notch, even with navigation chrome hidden.
-            .ignoresSafeArea(.container, edges: immersive && UIDevice.current.userInterfaceIdiom == .pad ? .top : [])
+            .ignoresSafeArea(.container, edges: immersive && Device.isPad ? .top : [])
 
             #endif
     }
@@ -416,7 +411,7 @@ private struct PostMetadataRow<Actions: View>: View {
     @State private var width: CGFloat = 600
     var body: some View {
         Group {
-            if width >= 520 {
+            if width >= Breakpoint.inlinePostActions {
                 HStack(spacing: 16) {
                     PostByline(creator: creator, icon: icon, date: date)
                     Spacer(minLength: 8)
