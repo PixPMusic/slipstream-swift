@@ -310,7 +310,13 @@ private final class PlaybackSurface: UIView {
         let safe = view.safeAreaInsets
         let windowMargin = !fullscreen && traitCollection.userInterfaceIdiom == .pad
             ? controlArea.map { view.convert($0.layoutFrame, from: window).minX } ?? 0 : 0
-        let insets = EdgeInsets(top: max(12, safe.top + 8),
+        // Inline iPad video extends under the status bar, so its own safe area
+        // can be empty. Align its 44-point buttons with the navigation row by
+        // converting the window's safe-area edge into player coordinates.
+        let headerTop = !fullscreen && traitCollection.userInterfaceIdiom == .pad
+            ? max(12, view.convert(window.safeAreaLayoutGuide.layoutFrame, from: window).minY)
+            : max(12, safe.top + 8)
+        let insets = EdgeInsets(top: headerTop,
                                 leading: max(16, safe.left + 12, windowMargin),
                                 bottom: max(12, safe.bottom + 8),
                                 trailing: max(16, safe.right + 12))
