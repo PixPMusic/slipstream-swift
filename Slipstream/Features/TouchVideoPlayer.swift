@@ -373,7 +373,17 @@ private struct TouchPlayerControls: View {
     @State private var seekGeneration = 0
     var body: some View {
         GeometryReader { geometry in
-            let availableWidth = geometry.size.width - insets.leading - insets.trailing
+            // A phone's camera reservation only affects one row: the top in
+            // portrait and the bottom in landscape. Let the other row span
+            // the screen instead of reserving that strip for all controls.
+            let phoneFullscreen = fullscreen && UIDevice.current.userInterfaceIdiom == .phone
+            let wideHeader = phoneFullscreen && geometry.size.width > geometry.size.height
+            let wideTransport = phoneFullscreen && !wideHeader
+            let headerLeading = wideHeader ? 16 : insets.leading
+            let headerTrailing = wideHeader ? 16 : insets.trailing
+            let transportLeading = wideTransport ? 16 : insets.leading
+            let transportTrailing = wideTransport ? 16 : insets.trailing
+            let availableWidth = geometry.size.width - transportLeading - transportTrailing
             ZStack {
                 Color.clear.contentShape(Rectangle())
                     .onTapGesture(count: 2, coordinateSpace: .local) { point in
@@ -415,10 +425,12 @@ private struct TouchPlayerControls: View {
                             session.toggleMute()
                         }
                     }
+                    .padding(.leading, headerLeading).padding(.trailing, headerTrailing)
                     Spacer()
                     TouchTransportBar(session: session, fullscreen: fullscreen, canPiP: canPiP, compact: availableWidth < 900, showTotalTime: availableWidth >= 380, expand: expand, pictureInPicture: pictureInPicture)
+                        .padding(.leading, transportLeading).padding(.trailing, transportTrailing)
                 }
-                .padding(insets)
+                .padding(.top, insets.top).padding(.bottom, insets.bottom)
                 .opacity(session.visible || voiceOver ? 1 : 0)
                 .allowsHitTesting(session.visible || voiceOver)
                 .accessibilityHidden(!session.visible && !voiceOver)
