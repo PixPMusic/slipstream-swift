@@ -16,8 +16,7 @@ struct ContentView: View {
                 ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if model.user != nil || model.demo {
                 #if os(iOS)
-                // Let iPad collapse its split view without replacing the feed hierarchy.
-                if horizontalSizeClass == .compact && UIDevice.current.userInterfaceIdiom != .pad {
+                if usesStack(horizontalSizeClass) {
                     NavigationStack(path: $compactPath) {
                         LibrarySidebar(selection: sidebarSelection, navigate: { compactPath = [$0] })
                             .navigationDestination(for: String.self) { value in
@@ -36,15 +35,15 @@ struct ContentView: View {
         .background {
             if #available(iOS 27.1, *) {
                 DuoHingeObserver {
-                    guard !model.usesSwipeSidebar else { return }
-                    model.usesSwipeSidebar = true
+                    guard !model.isDuo else { return }
+                    model.isDuo = true
                     model.sidebarHidden = true
                     columnVisibility = .detailOnly
                 }
             }
         }
         .onChange(of: horizontalSizeClass) { _, sizeClass in
-            if sizeClass == .compact && UIDevice.current.userInterfaceIdiom != .pad { compactPath = [selection] }
+            if usesStack(sizeClass) { compactPath = [selection] }
         }
         #endif
         #if os(macOS)
@@ -70,6 +69,14 @@ struct ContentView: View {
         } message: { Text(model.error ?? "") }
     }
 
+    #if os(iOS)
+    /// iPhone and Duo navigate with a stack when compact. iPad keeps one split
+    /// view, so collapsing it doesn't replace the feed hierarchy.
+    private func usesStack(_ sizeClass: UserInterfaceSizeClass?) -> Bool {
+        sizeClass == .compact && !Device.isPad
+    }
+    #endif
+
     private var postSelection: Binding<PostPlayback?> {
         Binding(get: { selectedPost }, set: { value in
             if selectedPost !== value { selectedPost?.stop() }
@@ -91,9 +98,9 @@ struct ContentView: View {
     private var splitLibrary: some View {
         NavigationSplitView(columnVisibility: $columnVisibility) {
             LibrarySidebar(selection: sidebarSelection)
-                .modifier(SwipeSidebarToolbar())
+                .modifier(DuoSidebarToolbar())
                 .simultaneousGesture(DragGesture().onEnded { value in
-                    if model.usesSwipeSidebar,
+                    if model.isDuo,
                        value.translation.width < -60,
                        abs(value.translation.width) > abs(value.translation.height) {
                         withAnimation { columnVisibility = .detailOnly }
@@ -103,12 +110,12 @@ struct ContentView: View {
             NavigationStack {
                 LibraryDestination(selection: selection, selectedPost: postSelection)
             }.id(selection)
-                .modifier(SwipeSidebarToolbar())
+                .modifier(DuoSidebarToolbar())
         }
         .modifier(DuoSidebarLayout())
         #if os(iOS)
         .overlay(alignment: .leading) {
-            if model.usesSwipeSidebar, horizontalSizeClass == .regular, columnVisibility == .detailOnly {
+            if model.isDuo, horizontalSizeClass == .regular, columnVisibility == .detailOnly {
                 Color.clear
                     .frame(width: 24)
                     .contentShape(Rectangle())
@@ -150,10 +157,10 @@ private struct LibraryDestination: View {
     }
 }
 
-private struct SwipeSidebarToolbar: ViewModifier {
+private struct DuoSidebarToolbar: ViewModifier {
     @Environment(AppModel.self) private var model
     @ViewBuilder func body(content: Content) -> some View {
-        if model.usesSwipeSidebar {
+        if model.isDuo {
             content.toolbar(removing: .sidebarToggle)
         } else {
             content
@@ -164,7 +171,7 @@ private struct SwipeSidebarToolbar: ViewModifier {
 private struct DuoSidebarLayout: ViewModifier {
     @Environment(AppModel.self) private var model
     @ViewBuilder func body(content: Content) -> some View {
-        if model.usesSwipeSidebar {
+        if model.isDuo {
             content.navigationSplitViewStyle(.prominentDetail)
         } else {
             content
@@ -469,6 +476,7 @@ struct FeedView: View {
         #endif
         return Array(repeating: GridItem(.flexible(minimum: 0), spacing: 12, alignment: .top), count: count)
     }
+    private var compact: Bool { feedWidth < Breakpoint.compactFeed }
     private var banner: FPImage? { channel?.cover ?? creators.first.flatMap { creatorID == nil ? nil : $0.cover } }
     var body: some View {
         ScrollView {
@@ -514,7 +522,7 @@ struct FeedView: View {
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         #endif
-        .modifier(FeedSearch(text: $search, width: feedWidth < 700 ? 160 : 240, compact: feedWidth < 700, refresh: {
+        .modifier(FeedSearch(text: $search, compact: compact, refresh: {
             Task { await model.loadCreators(); await load(reset: true) }
         }))
         .task(id: [search, channel?.id ?? ""] + creators.map(\.id)) {
@@ -530,15 +538,14 @@ struct FeedView: View {
             // SwiftUI can cancel its refresh task as compact scroll content updates.
             await Task { await load(reset: true) }.value
         }
-        .modifier(ReadingContentClip(reading: banner != nil && bannerScrolledAway))
-        .modifier(ReadingScrollEdge(reading: banner != nil && bannerScrolledAway))
+        .modifier(ReadingEdge(reading: banner != nil && bannerScrolledAway))
         .modifier(FeedBannerChrome(title: title, enabled: banner != nil, bannerHeight: bannerHeight, scrolledAway: $bannerScrolledAway))
     }
     private var cardTitleLines: Int {
         #if os(iOS)
         2
         #else
-        feedWidth < 700 ? 3 : 2
+        compact ? 3 : 2
         #endif
     }
     @MainActor private func load(reset: Bool) async {
@@ -712,7 +719,7 @@ private struct FeedBannerChrome: ViewModifier {
         .modifier(ToolbarTitleVisibility(hidden: enabled && !scrolledAway))
         #else
         // Extend behind navigation buttons, reserving only the phone's camera/status area.
-        .contentMargins(.top, enabled && UIDevice.current.userInterfaceIdiom == .phone ? phoneTopInset : 0, for: .scrollContent)
+        .contentMargins(.top, enabled && Device.isPhone ? phoneTopInset : 0, for: .scrollContent)
         .background { WindowTopInsetReader { phoneTopInset = $0 } }
         .ignoresSafeArea(.container, edges: enabled ? .top : [])
         .toolbarBackground(enabled && !scrolledAway ? .hidden : .automatic, for: .navigationBar)

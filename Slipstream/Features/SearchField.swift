@@ -37,10 +37,12 @@ struct NativeSearchField: NSViewRepresentable {
 struct FeedSearch: ViewModifier {
     @Environment(AppModel.self) private var model
     @Binding var text: String
-    var width: CGFloat = 240
     var compact = false
     var refresh: (() -> Void)? = nil
     @State private var focusRequested = false
+    #if os(macOS)
+    private var searchWidth: CGFloat { compact ? 160 : 240 }
+    #endif
     func body(content: Content) -> some View {
         #if os(macOS)
         content.toolbar {
@@ -51,13 +53,13 @@ struct FeedSearch: ViewModifier {
                         ToolbarItem { FeedRefreshButton(action: refresh) }.sharedBackgroundVisibility(.hidden)
                     }
                     ToolbarItem {
-                        FeedSearchControl(text: $text, focusRequested: $focusRequested, width: width)
+                        FeedSearchControl(text: $text, focusRequested: $focusRequested, width: searchWidth)
                     }.sharedBackgroundVisibility(.hidden)
                 } else {
                     ToolbarItem(placement: .principal) { Spacer() }
                     if let refresh { ToolbarItem { FeedRefreshButton(action: refresh) } }
                     ToolbarItem {
-                        FeedSearchControl(text: $text, focusRequested: $focusRequested, width: width)
+                        FeedSearchControl(text: $text, focusRequested: $focusRequested, width: searchWidth)
                     }
                 }
             }
@@ -66,7 +68,7 @@ struct FeedSearch: ViewModifier {
             if model.windowFullscreen {
                 HStack(spacing: 8) {
                     if let refresh { FeedRefreshButton(action: refresh) }
-                    FeedSearchControl(text: $text, focusRequested: $focusRequested, width: width)
+                    FeedSearchControl(text: $text, focusRequested: $focusRequested, width: searchWidth)
                 }.padding(.top, 8).padding(.trailing, 12).ignoresSafeArea(.container, edges: .top)
             }
         }
@@ -78,7 +80,7 @@ struct FeedSearch: ViewModifier {
         // Keep content actions blue while the system search controls use neutral chrome.
         if #available(iOS 26.0, *) {
             searchContent(content)
-                .searchToolbarBehavior(UIDevice.current.userInterfaceIdiom == .pad && compact ? .minimize : .automatic)
+                .searchToolbarBehavior(Device.isPad && compact ? .minimize : .automatic)
         } else {
             searchContent(content)
         }
@@ -88,7 +90,7 @@ struct FeedSearch: ViewModifier {
     #if os(iOS)
     private func searchContent(_ content: Content) -> some View {
         content.tint(.blue)
-            .searchable(text: $text, placement: UIDevice.current.userInterfaceIdiom == .pad ? .toolbar : .automatic, prompt: "Search")
+            .searchable(text: $text, placement: Device.isPad ? .toolbar : .automatic, prompt: "Search")
             .tint(.primary)
     }
     #endif

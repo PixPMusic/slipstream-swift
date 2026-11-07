@@ -8,7 +8,9 @@ import Security
     var chatPreview = false
     #endif
     var emotes: [FPEmote] = []
-    var usesSwipeSidebar = false
+    /// Phone hardware with a hinge, set from its first hinge update. Duo uses
+    /// a swipe-revealed sidebar over a prominent detail column.
+    var isDuo = false
     var sidebarHidden = false
     #if os(macOS)
     var windowFullscreen = false
