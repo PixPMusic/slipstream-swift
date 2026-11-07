@@ -36,6 +36,8 @@ See [configuration](docs/Configuration.md) for all overrides and [distribution](
 
 ## Development
 
+See [Contributing](CONTRIBUTING.md) for focused checks, PR requirements, and uploading before/after evidence. Agent guidance lives in [AGENTS.md](AGENTS.md).
+
 `project.yml` is the source of truth for project structure. The generated Xcode project and package lockfile are committed so a checkout opens directly in Xcode. After changing the specification, install XcodeGen and run `xcodegen generate`.
 
 The standalone Swift package tests the shared core with synthetic fixtures and URLProtocol. Tests do not log in, write real Keychain sessions, post comments, or send chat messages.
