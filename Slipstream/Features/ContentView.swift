@@ -29,6 +29,16 @@ struct ContentView: View {
             } else { WelcomeView() }
         }
         #if os(iOS)
+        .background {
+            if #available(iOS 27.1, *) {
+                DuoHingeObserver {
+                    guard !model.usesSwipeSidebar else { return }
+                    model.usesSwipeSidebar = true
+                    model.sidebarHidden = true
+                    columnVisibility = .detailOnly
+                }
+            }
+        }
         .onChange(of: horizontalSizeClass) { _, sizeClass in
             if sizeClass == .compact { compactPath = [selection] }
         }
@@ -65,11 +75,40 @@ struct ContentView: View {
     private var splitLibrary: some View {
         NavigationSplitView(columnVisibility: $columnVisibility) {
             LibrarySidebar(selection: sidebarSelection)
+                .modifier(SwipeSidebarToolbar())
+                .simultaneousGesture(DragGesture().onEnded { value in
+                    if model.usesSwipeSidebar,
+                       value.translation.width < -60,
+                       abs(value.translation.width) > abs(value.translation.height) {
+                        withAnimation { columnVisibility = .detailOnly }
+                    }
+                })
         } detail: {
             NavigationStack {
                 LibraryDestination(selection: selection)
             }.id(selection)
+                .modifier(SwipeSidebarToolbar())
         }
+        .modifier(DuoSidebarLayout())
+        #if os(iOS)
+        .overlay(alignment: .leading) {
+            if model.usesSwipeSidebar, horizontalSizeClass == .regular, columnVisibility == .detailOnly {
+                Color.clear
+                    .frame(width: 24)
+                    .contentShape(Rectangle())
+                    .gesture(DragGesture().onEnded { value in
+                        if value.translation.width > 60,
+                           value.translation.width > abs(value.translation.height) {
+                            withAnimation { columnVisibility = .all }
+                        }
+                    })
+                    .accessibilityLabel("Sidebar")
+                    .accessibilityAction(named: "Show Sidebar") {
+                        withAnimation { columnVisibility = .all }
+                    }
+            }
+        }
+        #endif
         .onChange(of: columnVisibility) { _, value in model.sidebarHidden = value == .detailOnly }
         #if os(iOS)
         .onChange(of: model.sidebarHidden) { _, hidden in
@@ -93,6 +132,45 @@ private struct LibraryDestination: View {
         }
     }
 }
+
+private struct SwipeSidebarToolbar: ViewModifier {
+    @Environment(AppModel.self) private var model
+    @ViewBuilder func body(content: Content) -> some View {
+        if model.usesSwipeSidebar {
+            content.toolbar(removing: .sidebarToggle)
+        } else {
+            content
+        }
+    }
+}
+
+private struct DuoSidebarLayout: ViewModifier {
+    @Environment(AppModel.self) private var model
+    @ViewBuilder func body(content: Content) -> some View {
+        if model.usesSwipeSidebar {
+            content.navigationSplitViewStyle(.prominentDetail)
+        } else {
+            content
+        }
+    }
+}
+
+#if os(iOS)
+@available(iOS 27.1, *)
+private struct DuoHingeObserver: UIViewRepresentable {
+    let detected: () -> Void
+    func makeUIView(context: Context) -> UIView {
+        let view = UIView()
+        view.isUserInteractionEnabled = false
+        view.addInteraction(UIHingeInteraction { _, update in
+            guard update.hinge != nil else { return }
+            DispatchQueue.main.async { detected() }
+        })
+        return view
+    }
+    func updateUIView(_ view: UIView, context: Context) {}
+}
+#endif
 
 #if os(macOS)
 private struct WindowFullscreenObserver: NSViewRepresentable {
