@@ -12,11 +12,13 @@ BUILD_NUMBER=2 ./scripts/testflight.sh archive ios
 
 `archive` produces a signed Release archive. `export` creates local distribution files. `upload` exports and uploads the existing archive to App Store Connect. The latter two are alternatives; exporting separately is optional. Use `macos` instead of `ios` for the native Mac target.
 
-Increase `BUILD_NUMBER` for every new upload. `APP_VERSION` optionally overrides the marketing version. The archive command refuses the public placeholder bundle ID or a missing team. Distribution signing requires current Apple program membership, agreements, and provisioning access; a successful unsigned compile is not an uploadable build.
+Increase `BUILD_NUMBER` for every new upload. Keep `APP_VERSION` stable while testing the same upcoming release: for example, `0.1.0 (1)`, `0.1.0 (2)`, then `0.1.0 (3)`. Change the marketing version when starting a subsequent release. `APP_VERSION` optionally overrides that version. The archive command refuses the public placeholder bundle ID or a missing team. Distribution signing requires current Apple program membership, agreements, and provisioning access; a successful unsigned compile is not an uploadable build.
 
 After upload, wait for processing in App Store Connect, answer encryption compliance from the actual implementation, then add the build to an internal tester group. A successful upload alone does not mean testers can install it. External distribution additionally requires beta review information and Beta App Review. These scripts do not submit an App Store release or invite new testers.
 
-The app and bundled chat transport currently rely on Apple's networking, Security, and CommonCrypto APIs. Reassess export answers when dependencies or crypto behavior change. No export-compliance declaration is silently hardcoded in this repository.
+iOS live playback includes Amazon IVS Player, whose [SDK license](https://player.live-video.net/LICENSE.txt) identifies bundled OpenSSL. For the current dependency set, declare **standard encryption algorithms in addition to Apple's operating system**, rather than declaring OS-only encryption. The app does not implement proprietary encryption. Answer the France availability question according to the actual distribution plan; [Apple requires the French declaration only when distributing on the App Store in France](https://developer.apple.com/help/app-store-connect/reference/app-information/export-compliance-documentation-for-encryption/). Excluding France in that declaration must match App Store availability.
+
+Reassess these answers when dependencies or distribution territories change. No export-compliance declaration is silently hardcoded in this repository.
 
 ## Review information
 
