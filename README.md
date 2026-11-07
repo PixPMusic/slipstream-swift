@@ -42,7 +42,7 @@ See [Contributing](CONTRIBUTING.md) for focused checks, PR requirements, and upl
 
 The standalone Swift package tests the shared core with synthetic fixtures and URLProtocol. Tests do not log in, write real Keychain sessions, post comments, or send chat messages.
 
-Choose **Try Demo** to browse bundled sample content without an account. The Mac app also accepts `--demo`. Demo posts do not play video. The icon is generated with `swift scripts/generate-icon.swift` using Core Graphics.
+Choose **Try Demo** to browse bundled sample content without an account. The Mac app also accepts `--demo`. Demo posts play a bundled, silent one-minute timecode clip (about 90 KB) for trying playback controls offline. The icon is generated with `swift scripts/generate-icon.swift` using Core Graphics.
 
 ## Playback and sign-in
 

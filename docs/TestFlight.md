@@ -22,7 +22,7 @@ Reassess these answers when dependencies or distribution territories change. No 
 
 ## Review information
 
-The welcome screen offers **Try Demo** without credentials. It shows bundled browsing fixtures; demo posts do not play video. Actual media, account actions, and live chat require an account with the appropriate Floatplane subscriptions. Demo Mode does not unlock subscribed content. Do not describe it as full access during review.
+The welcome screen offers **Try Demo** without credentials. It shows bundled browsing fixtures; demo posts play a silent one-minute synthetic timecode clip offline. Actual media, account actions, and live chat require an account with the appropriate Floatplane subscriptions. Demo Mode does not unlock subscribed content. Do not describe it as full access during review.
 
 Provide review contact information, a published privacy policy, and an honest explanation of the real sign-in and subscription requirements in App Store Connect. Supply any arranged review credentials there, never in this repository. Check the archive's privacy report, dependency manifests, licensing, and service/content authorization before external distribution.
 
