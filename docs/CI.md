@@ -4,7 +4,7 @@
 
 Both workflows use GitHub's Apple Silicon `xcode-27` runner and pin Xcode 27.1, which includes the iOS 27.1 SDK required by the Duo hinge and control rail APIs. Runtime availability checks preserve the app's older deployment targets; they do not make those APIs compile with an older SDK. See the [runner's installed Xcode versions](https://github.com/actions/runner-images/blob/main/images/macos/xcode-27-arm64-Readme.md#xcode).
 
-`ci.yml` runs the synthetic core tests with `swift test`. Full Mac and iOS app builds remain available through the local build scripts. CI needs no Apple credentials and boots no simulator.
+`ci.yml` runs the synthetic core tests with `swift test` and compiles the iOS app in Release mode with signing disabled. This catches SDK compatibility errors before the distribution workflow needs signing credentials. Full Mac builds remain available through the local build scripts. CI needs no Apple credentials and boots no simulator.
 
 The workflow has only `contents: read`, does not persist Git credentials, and receives no signing secrets. There is no privileged `pull_request_target` or `workflow_run` path, shared build cache, or artifact handoff into signing. Fork changes therefore cannot enter the distribution job through a cached build or a PR artifact.
 
