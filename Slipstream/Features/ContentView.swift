@@ -659,6 +659,9 @@ private struct FeedBannerChrome: ViewModifier {
     let enabled: Bool
     let bannerHeight: CGFloat
     @Binding var scrolledAway: Bool
+    #if os(iOS)
+    @State private var phoneTopInset: CGFloat = 0
+    #endif
     func body(content: Content) -> some View {
         Group {
             if #available(macOS 15.0, iOS 18.0, *) {
@@ -673,6 +676,9 @@ private struct FeedBannerChrome: ViewModifier {
         .toolbarBackground(enabled && !scrolledAway ? .hidden : .visible, for: .windowToolbar)
         .modifier(ToolbarTitleVisibility(hidden: enabled && !scrolledAway))
         #else
+        // Extend behind navigation buttons, reserving only the phone's camera/status area.
+        .contentMargins(.top, enabled && UIDevice.current.userInterfaceIdiom == .phone ? phoneTopInset : 0, for: .scrollContent)
+        .background { WindowTopInsetReader { phoneTopInset = $0 } }
         .ignoresSafeArea(.container, edges: enabled ? .top : [])
         .toolbarBackground(enabled && !scrolledAway ? .hidden : .automatic, for: .navigationBar)
         .navigationTitle(enabled && !scrolledAway ? "" : title)
@@ -684,3 +690,21 @@ private struct FeedBannerChrome: ViewModifier {
         #endif
     }
 }
+
+#if os(iOS)
+private struct WindowTopInsetReader: UIViewRepresentable {
+    let changed: (CGFloat) -> Void
+    func makeUIView(context: Context) -> Probe { Probe() }
+    func updateUIView(_ view: Probe, context: Context) { view.changed = changed; view.publish() }
+    final class Probe: UIView {
+        var changed: ((CGFloat) -> Void)?
+        override func didMoveToWindow() { super.didMoveToWindow(); publish() }
+        override func safeAreaInsetsDidChange() { super.safeAreaInsetsDidChange(); publish() }
+        func publish() {
+            guard let window else { return }
+            let top = window.safeAreaInsets.top
+            DispatchQueue.main.async { [weak self] in self?.changed?(top) }
+        }
+    }
+}
+#endif
