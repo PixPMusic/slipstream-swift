@@ -47,6 +47,7 @@ targets:
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         SlipstreamKeychainService: $(SLIPSTREAM_KEYCHAIN_SERVICE)
         LSApplicationCategoryType: public.app-category.entertainment
+        ITSAppUsesNonExemptEncryption: false
   Slipstream-iOS:
     configFiles:
       Debug: Config/Signing.automatic.xcconfig
@@ -73,6 +74,8 @@ targets:
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         SlipstreamKeychainService: $(SLIPSTREAM_KEYCHAIN_SERVICE)
         UIBackgroundModes: [audio]
+        # Standard encryption in IVS; current distribution excludes France.
+        ITSAppUsesNonExemptEncryption: false
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait, UIInterfaceOrientationLandscapeLeft, UIInterfaceOrientationLandscapeRight]
         UISupportedInterfaceOrientations~ipad: [UIInterfaceOrientationPortrait, UIInterfaceOrientationPortraitUpsideDown, UIInterfaceOrientationLandscapeLeft, UIInterfaceOrientationLandscapeRight]
 schemes:
