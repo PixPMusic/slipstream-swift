@@ -2,7 +2,11 @@ import SwiftUI
 
 struct ContentView: View {
     @Environment(AppModel.self) private var model
-    @State private var selection: String? = "all"
+    #if os(iOS)
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @State private var compactPath: [String] = []
+    #endif
+    @State private var selection = "all"
     @State private var columnVisibility = NavigationSplitViewVisibility.all
     var body: some View {
         @Bindable var model = model
@@ -10,27 +14,25 @@ struct ContentView: View {
             if model.restoring {
                 ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if model.user != nil || model.demo {
-                NavigationSplitView(columnVisibility: $columnVisibility) {
-                    LibrarySidebar(selection: $selection)
-                } detail: {
-                    NavigationStack {
-                        if selection == "live" { LiveLibraryView() }
-                        else {
-                            let channel = model.channelsByID[selection ?? ""]
-                            FeedView(creatorID: channel?.creator ?? (selection == "all" ? nil : selection), channel: channel)
-                                .id("\(model.user?.id ?? "demo")-\(selection ?? "all")")
-                        }
-                    }.id(selection ?? "all")
-                }
-                .onChange(of: columnVisibility) { _, value in model.sidebarHidden = value == .detailOnly }
                 #if os(iOS)
-                .onChange(of: model.sidebarHidden) { _, hidden in
-                    let visibility: NavigationSplitViewVisibility = hidden ? .detailOnly : .all
-                    if columnVisibility != visibility { columnVisibility = visibility }
-                }
+                if horizontalSizeClass == .compact {
+                    NavigationStack(path: $compactPath) {
+                        LibrarySidebar(selection: sidebarSelection, navigate: { compactPath = [$0] })
+                            .navigationDestination(for: String.self) { value in
+                                LibraryDestination(selection: value)
+                            }
+                    }
+                } else { splitLibrary }
+                #else
+                splitLibrary
                 #endif
             } else { WelcomeView() }
         }
+        #if os(iOS)
+        .onChange(of: horizontalSizeClass) { _, sizeClass in
+            if sizeClass == .compact { compactPath = [selection] }
+        }
+        #endif
         #if os(macOS)
         .background {
             WindowFullscreenObserver { fullscreen in
@@ -52,6 +54,43 @@ struct ContentView: View {
         .alert("Slipstream", isPresented: Binding(get: { model.error != nil }, set: { if !$0 { model.error = nil } })) {
             Button("OK") { model.error = nil }
         } message: { Text(model.error ?? "") }
+    }
+
+    // List clears its optional selection when a compact destination is pushed.
+    // Keep the active feed so expanding back to two columns restores it.
+    private var sidebarSelection: Binding<String?> {
+        Binding(get: { selection }, set: { if let value = $0 { selection = value } })
+    }
+
+    private var splitLibrary: some View {
+        NavigationSplitView(columnVisibility: $columnVisibility) {
+            LibrarySidebar(selection: sidebarSelection)
+        } detail: {
+            NavigationStack {
+                LibraryDestination(selection: selection)
+            }.id(selection)
+        }
+        .onChange(of: columnVisibility) { _, value in model.sidebarHidden = value == .detailOnly }
+        #if os(iOS)
+        .onChange(of: model.sidebarHidden) { _, hidden in
+            let visibility: NavigationSplitViewVisibility = hidden ? .detailOnly : .all
+            if columnVisibility != visibility { columnVisibility = visibility }
+        }
+        #endif
+    }
+}
+
+private struct LibraryDestination: View {
+    @Environment(AppModel.self) private var model
+    let selection: String
+
+    var body: some View {
+        if selection == "live" { LiveLibraryView() }
+        else {
+            let channel = model.channelsByID[selection]
+            FeedView(creatorID: channel?.creator ?? (selection == "all" ? nil : selection), channel: channel)
+                .id("\(model.user?.id ?? "demo")-\(selection)")
+        }
     }
 }
 
@@ -186,18 +225,19 @@ private struct FullscreenWindowButtons: NSViewRepresentable {
 private struct LibrarySidebar: View {
     @Environment(AppModel.self) private var model
     @Binding var selection: String?
+    var navigate: ((String) -> Void)? = nil
     var body: some View {
         VStack(spacing: 0) {
             List(selection: $selection) {
-                NavigationLink(value: "all") {
+                SidebarRow(value: "all", selection: $selection, navigate: navigate) {
                     Label("Library", systemImage: "play.rectangle.on.rectangle")
-                }
-                NavigationLink(value: "live") {
+                }.tag("all")
+                SidebarRow(value: "live", selection: $selection, navigate: navigate) {
                     Label("Live", systemImage: "dot.radiowaves.left.and.right")
-                }
+                }.tag("live")
                 Section {
                     ForEach(model.creators) { creator in
-                        CreatorSidebarBranch(creator: creator, channels: model.channelsByCreator[creator.id] ?? [])
+                        CreatorSidebarBranch(creator: creator, channels: model.channelsByCreator[creator.id] ?? [], selection: $selection, navigate: navigate)
                     }
                 } header: { Text("Creators").foregroundStyle(Color.primary.opacity(0.7)) }
             }
@@ -224,20 +264,37 @@ private struct LibrarySidebar: View {
 private struct CreatorSidebarBranch: View {
     let creator: Creator
     let channels: [CreatorChannel]
+    @Binding var selection: String?
+    var navigate: ((String) -> Void)? = nil
     @State private var expanded = true
     var body: some View {
         DisclosureGroup(isExpanded: $expanded) {
             ForEach(channels) { channel in
-                NavigationLink(value: channel.id) {
+                SidebarRow(value: channel.id, selection: $selection, navigate: navigate) {
                     Label {
                         Text(channel.title).lineLimit(1)
                     } icon: { CreatorAvatar(url: channel.icon?.url, size: 20) }
-                }
+                }.tag(channel.id)
             }
         } label: {
-            NavigationLink(value: creator.id) {
+            SidebarRow(value: creator.id, selection: $selection, navigate: navigate) {
                 Label { Text(creator.title) } icon: { CreatorAvatar(url: creator.icon?.url, size: 22) }
-            }
+            }.tag(creator.id)
+        }
+    }
+}
+
+private struct SidebarRow<Label: View>: View {
+    let value: String
+    @Binding var selection: String?
+    let navigate: ((String) -> Void)?
+    @ViewBuilder var label: () -> Label
+
+    var body: some View {
+        if let navigate {
+            Button { selection = value; navigate(value) } label: { label() }
+        } else {
+            NavigationLink(value: value) { label() }
         }
     }
 }
