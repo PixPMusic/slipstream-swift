@@ -187,21 +187,30 @@ private struct LibrarySidebar: View {
     @Environment(AppModel.self) private var model
     @Binding var selection: String?
     var body: some View {
-        List(selection: $selection) {
-            Label("Library", systemImage: "play.rectangle.on.rectangle").tag("all")
-            Label("Live", systemImage: "dot.radiowaves.left.and.right").tag("live")
-            Section {
-                ForEach(model.creators) { creator in
-                    CreatorSidebarBranch(creator: creator, channels: model.channelsByCreator[creator.id] ?? [])
-                }
-            } header: { Text("Creators").foregroundStyle(Color.primary.opacity(0.7)) }
+        VStack(spacing: 0) {
+            List(selection: $selection) {
+                Label("Library", systemImage: "play.rectangle.on.rectangle").tag("all")
+                Label("Live", systemImage: "dot.radiowaves.left.and.right").tag("live")
+                Section {
+                    ForEach(model.creators) { creator in
+                        CreatorSidebarBranch(creator: creator, channels: model.channelsByCreator[creator.id] ?? [])
+                    }
+                } header: { Text("Creators").foregroundStyle(Color.primary.opacity(0.7)) }
+            }
+            .listStyle(.sidebar)
+            .labelStyle(.titleAndIcon)
+            .clipped()
+            AccountFooter()
+                #if os(iOS)
+                .padding(.bottom, 16)
+                #endif
         }
-        .listStyle(.sidebar)
-        .labelStyle(.titleAndIcon)
+        #if os(iOS)
+        .ignoresSafeArea(.container, edges: .bottom)
+        #endif
         .navigationTitle("Slipstream")
         .frame(minWidth: 240)
         .navigationSplitViewColumnWidth(min: 240, ideal: 260, max: 320)
-        .safeAreaInset(edge: .bottom, spacing: 0) { AccountFooter() }
         #if os(macOS)
         .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { model.sidebarWidth = $0 }
         #endif
