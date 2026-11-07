@@ -33,7 +33,7 @@ for mapping in SLIPSTREAM_BUNDLE_ID:SLIPSTREAM_BUNDLE_ID \
   if [[ -n "${!name:-}" ]]; then build_settings+=("$setting=${!name}"); fi
 done
 if [[ -n "${IOS_PROVISIONING_PROFILE:-}" ]]; then
-  build_settings+=(CODE_SIGN_STYLE=Manual "PROVISIONING_PROFILE_SPECIFIER=$IOS_PROVISIONING_PROFILE")
+  build_settings+=(SLIPSTREAM_CODE_SIGN_STYLE=Manual "SLIPSTREAM_PROVISIONING_PROFILE=$IOS_PROVISIONING_PROFILE")
 fi
 
 provisioning_auth=()

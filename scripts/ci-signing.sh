@@ -71,6 +71,8 @@ if entitlements.get('get-task-allow') or profile.get('ProvisionedDevices') or pr
     sys.exit('An App Store distribution profile is required.')
 if profile['ExpirationDate'].replace(tzinfo=datetime.timezone.utc) <= datetime.datetime.now(datetime.timezone.utc):
     sys.exit('The provisioning profile has expired.')
+if profile.get('IsXcodeManaged'):
+    sys.exit('CI requires a manually managed App Store profile, not an Xcode-managed profile.')
 profile_id = profile['UUID']
 uuid.UUID(profile_id)
 profile_path = Path.home() / 'Library/MobileDevice/Provisioning Profiles' / f'{profile_id}.mobileprovision'

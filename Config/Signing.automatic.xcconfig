@@ -1,5 +1,6 @@
 #include "App.xcconfig"
-// Xcode manages provisioning; App Store export selects distribution signing.
-CODE_SIGN_STYLE = Automatic
+// Default to Xcode provisioning; CI can supply manual signing for this app.
+CODE_SIGN_STYLE = $(SLIPSTREAM_CODE_SIGN_STYLE)
 CODE_SIGN_IDENTITY = Apple Development
-PROVISIONING_PROFILE_SPECIFIER =
+// Apply CI's profile only to app targets that include this configuration.
+PROVISIONING_PROFILE_SPECIFIER = $(SLIPSTREAM_PROVISIONING_PROFILE)
