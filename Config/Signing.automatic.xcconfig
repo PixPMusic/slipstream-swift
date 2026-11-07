@@ -1,6 +1,6 @@
 #include "App.xcconfig"
 // Default to Xcode provisioning; CI can supply manual signing for this app.
 CODE_SIGN_STYLE = $(SLIPSTREAM_CODE_SIGN_STYLE)
-CODE_SIGN_IDENTITY = Apple Development
+CODE_SIGN_IDENTITY = $(SLIPSTREAM_CODE_SIGN_IDENTITY)
 // Apply CI's profile only to app targets that include this configuration.
 PROVISIONING_PROFILE_SPECIFIER = $(SLIPSTREAM_PROVISIONING_PROFILE)

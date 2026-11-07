@@ -24,9 +24,13 @@ if [[ "${CI:-}" != true && -f .env.local ]]; then
 fi
 
 build_settings=()
+signing_identity_setting=CODE_SIGN_IDENTITY
+if [[ -n "${IOS_PROVISIONING_PROFILE:-}" ]]; then
+  signing_identity_setting=SLIPSTREAM_CODE_SIGN_IDENTITY
+fi
 for mapping in SLIPSTREAM_BUNDLE_ID:SLIPSTREAM_BUNDLE_ID \
   SLIPSTREAM_KEYCHAIN_SERVICE:SLIPSTREAM_KEYCHAIN_SERVICE \
-  APPLE_TEAM_ID:DEVELOPMENT_TEAM APPLE_SIGNING_IDENTITY:CODE_SIGN_IDENTITY \
+  APPLE_TEAM_ID:DEVELOPMENT_TEAM "APPLE_SIGNING_IDENTITY:$signing_identity_setting" \
   APP_VERSION:MARKETING_VERSION BUILD_NUMBER:CURRENT_PROJECT_VERSION; do
   name="${mapping%%:*}"
   setting="${mapping#*:}"
