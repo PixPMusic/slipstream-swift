@@ -36,13 +36,14 @@ Keep the solution small, native, and focused on one underlying problem.
 ## Data, devices, and cleanup
 
 - Prefer **Try Demo** (Mac: `--demo`) and synthetic content for public evidence.
-  If reproducing a bug requires an account, inspect every capture for private
-  content before uploading. Never expose cookies, credentials, account details,
-  real hostnames, unrelated threads, or Nebius/customer information.
+  Screenshots may show ordinary app UI, including the username and subscribed
+  creators; those do not require sanitizing. Never expose cookies, credentials,
+  other secrets, real hostnames, unrelated private content, or Nebius/customer
+  information.
 - An authorized signed-in account may be used for playback verification. Preserve
   existing sign-in: do not sign out, reset app data, or remove saved credentials
   unless explicitly requested. Prefer a temporary demo launch when synthetic
-  content is sufficient, and sanitize account captures before public uploads.
+  content is sufficient.
 - Keep evidence, scratch notes, build products, and local signing settings out
   of commits. Do not change bundle IDs or signing to make a PR build locally.
 - Use at most one simulator or emulator at a time. Check for sessions used by
