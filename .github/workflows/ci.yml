@@ -17,13 +17,17 @@ concurrency:
 
 jobs:
   check:
-    runs-on: macos-26
+    runs-on: xcode-27
     timeout-minutes: 30
     env:
-      DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
+      DEVELOPER_DIR: /Applications/Xcode_27.1.app/Contents/Developer
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           persist-credentials: false
       - name: Core tests
         run: swift test
+      - name: Compile iOS Release without signing
+        env:
+          SLIPSTREAM_CONFIGURATION: Release
+        run: ./scripts/build.sh ios-device CODE_SIGNING_ALLOWED=NO

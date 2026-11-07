@@ -25,13 +25,13 @@ concurrency:
 jobs:
   upload:
     if: github.ref == 'refs/heads/main'
-    runs-on: macos-26
+    runs-on: xcode-27
     timeout-minutes: 45
     # Configure this environment to allow main only. Keep all signing secrets
     # here, not in repository-wide secrets available to other workflows.
     environment: testflight
     env:
-      DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
+      DEVELOPER_DIR: /Applications/Xcode_27.1.app/Contents/Developer
       SLIPSTREAM_BUNDLE_ID: ${{ vars.APPLE_BUNDLE_ID }}
       SLIPSTREAM_KEYCHAIN_SERVICE: ${{ vars.KEYCHAIN_SERVICE }}
       APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}

@@ -4,7 +4,7 @@ A native SwiftUI Floatplane client for Mac, iPhone, and iPad. Browse subscribed 
 
 ## Build
 
-Use Xcode 26 or later. Deployment targets are macOS 14 and iOS/iPadOS 17; newer glass APIs have availability guards. Mac Catalyst is disabled.
+Use Xcode 27.1 or later. Deployment targets are macOS 14 and iOS/iPadOS 17; newer APIs have runtime availability guards, but compiling the Duo hinge and control rail support requires the iOS 27.1 SDK. Mac Catalyst is disabled.
 
 A clean checkout can build without an Apple account:
 
@@ -54,7 +54,7 @@ Authenticated iPad playback, fullscreen transitions, quality changes, sidebar re
 
 ## CI and distribution
 
-[CI](.github/workflows/ci.yml) runs core tests without full app builds. PR jobs have a read-only token and no signing secrets. [TestFlight](.github/workflows/testflight.yml) is a separate manual workflow for an exact `main` commit, using the protected `testflight` environment and temporary signing credentials. It never signs PR artifacts. See [CI setup](docs/CI.md) for required variables, secrets, and branch restrictions.
+[CI](.github/workflows/ci.yml) runs core tests and an unsigned iOS Release build. PR jobs have a read-only token and no signing secrets. [TestFlight](.github/workflows/testflight.yml) is a separate manual workflow for an exact `main` commit, using the protected `testflight` environment and temporary signing credentials. It never signs PR artifacts. See [CI setup](docs/CI.md) for required variables, secrets, and branch restrictions.
 
 Build output, archives, local configuration, credentials, and developer account notes are ignored. Personal Apple account details do not belong in source or generated project files.
 
