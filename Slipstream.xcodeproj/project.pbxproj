@@ -27,6 +27,7 @@
 		3F7FFCFF6619482D86E28705 /* LoginNavigationPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57BD584144D8B2EDF7EA8CB2 /* LoginNavigationPolicy.swift */; };
 		408BCF3F6D958ACFC3549E1A /* ThirdPartyNotices.txt in Resources */ = {isa = PBXBuildFile; fileRef = 0DF775DA1076B274FFC04B02 /* ThirdPartyNotices.txt */; };
 		41AA099A40B2AE8253859738 /* PlayerSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB242B932E00B27F8A458081 /* PlayerSheet.swift */; };
+		41F94AA8A5BD72BBEDDCBBC2 /* DemoPlayback.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = A56D3CB0AFF76C764450785A /* DemoPlayback.mp4 */; };
 		450CA2060564CBDA2C33CDC2 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CF53FFE345A469236F78555 /* AppModel.swift */; };
 		454A200DCC6B0C6F3B9FD1D8 /* FloatplaneAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83FF96F06F318D64F8242E15 /* FloatplaneAPI.swift */; };
 		590132DBE86C3990DFE69884 /* SearchField.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0184CAD8EE88CEAD0D69DC1 /* SearchField.swift */; };
@@ -40,6 +41,7 @@
 		96B3A2CB0C0F6391EADAF1E1 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7944C6CF1A2E6EE299900750 /* ContentView.swift */; };
 		97E872A05EA7722C7C048F8A /* DownloadManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71EF7B32901A614D9BAED32F /* DownloadManager.swift */; };
 		9C99DA1B2731FBCFB9CDAAD4 /* TouchVideoPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92AB97F793B17B067EFD5067 /* TouchVideoPlayer.swift */; };
+		A2C5CE77C12484B6E7A4C05A /* DemoPlayback.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = A56D3CB0AFF76C764450785A /* DemoPlayback.mp4 */; };
 		A47819CDD2320A6DEFB4BDE4 /* SocketIO in Frameworks */ = {isa = PBXBuildFile; productRef = 6A0C4AAC112D524F5554D6FA /* SocketIO */; };
 		ACA2893948C9F5F0CBAB6DD6 /* Emotes.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4A42D5BE1BF20DDC21C4466 /* Emotes.swift */; };
 		B602B8AC9D2B1A62E799CC15 /* LoginSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3D89271BA8C7B7A7456AA2A /* LoginSheet.swift */; };
@@ -74,6 +76,7 @@
 		9724C60C79EEBE1DC5F9495A /* Slipstream-iOS.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = "Slipstream-iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		9CF53FFE345A469236F78555 /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
 		A2EF9506B4C7BE278ED63A42 /* SlipstreamApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlipstreamApp.swift; sourceTree = "<group>"; };
+		A56D3CB0AFF76C764450785A /* DemoPlayback.mp4 */ = {isa = PBXFileReference; path = DemoPlayback.mp4; sourceTree = "<group>"; };
 		AB242B932E00B27F8A458081 /* PlayerSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerSheet.swift; sourceTree = "<group>"; };
 		B3D89271BA8C7B7A7456AA2A /* LoginSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginSheet.swift; sourceTree = "<group>"; };
 		B4A42D5BE1BF20DDC21C4466 /* Emotes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Emotes.swift; sourceTree = "<group>"; };
@@ -168,6 +171,7 @@
 			isa = PBXGroup;
 			children = (
 				DE183808A16C5C64122E9BCF /* Assets.xcassets */,
+				A56D3CB0AFF76C764450785A /* DemoPlayback.mp4 */,
 				2468D54C41E9DD248562DEB2 /* iOS.xcassets */,
 				0DF775DA1076B274FFC04B02 /* ThirdPartyNotices.txt */,
 			);
@@ -290,6 +294,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				0C389C6D8617F9A59BB636B5 /* Assets.xcassets in Resources */,
+				A2C5CE77C12484B6E7A4C05A /* DemoPlayback.mp4 in Resources */,
 				408BCF3F6D958ACFC3549E1A /* ThirdPartyNotices.txt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -298,6 +303,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				41F94AA8A5BD72BBEDDCBBC2 /* DemoPlayback.mp4 in Resources */,
 				8FD93CFCE6FEFE2ED1E89E64 /* ThirdPartyNotices.txt in Resources */,
 				BA2F957B492CA7BC99B5BD51 /* iOS.xcassets in Resources */,
 			);

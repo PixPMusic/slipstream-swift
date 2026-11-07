@@ -16,7 +16,6 @@ import Observation
     var duration = 0.0
     var playing = false
     var visible = true
-    var scrubbing = false
     var interacting = false
     var muted = false
     var speed: Float = 1
@@ -62,7 +61,7 @@ import Observation
         tick = player.addPeriodicTimeObserver(forInterval: CMTime(seconds: 0.5, preferredTimescale: 600), queue: .main) { [weak self] time in
             MainActor.assumeIsolated {
                 guard let self else { return }
-                if !self.scrubbing { self.time = time.seconds.isFinite ? time.seconds : 0 }
+                self.time = time.seconds.isFinite ? time.seconds : 0
                 let length = self.player.currentItem?.duration.seconds ?? 0
                 self.duration = length.isFinite ? max(0, length) : 0
             }
@@ -98,7 +97,7 @@ import Observation
     func reveal() {
         setVisible(true)
         hideTask?.cancel()
-        guard playing, !scrubbing, !interacting else { return }
+        guard playing, !interacting else { return }
         hideTask = Task { [weak self] in
             do { try await Task.sleep(for: .seconds(3)) } catch { return }
             self?.setVisible(false)
@@ -569,9 +568,6 @@ private struct TouchSeekSlider: UIViewRepresentable {
         slider.maximumTrackTintColor = .white.withAlphaComponent(0.25)
         slider.thumbTintColor = .white
         slider.accessibilityLabel = String(localized: "Playback position")
-        slider.editingChanged = { [weak coordinator = context.coordinator] editing in
-            if editing { coordinator?.began() } else { coordinator?.ended() }
-        }
         slider.addTarget(context.coordinator, action: #selector(Coordinator.changed(_:)), for: .valueChanged)
         return slider
     }
@@ -587,19 +583,15 @@ private struct TouchSeekSlider: UIViewRepresentable {
     @MainActor final class Coordinator: NSObject {
         let session: TouchPlayback
         init(session: TouchPlayback) { self.session = session }
-        @objc func began() { session.scrubbing = true; session.reveal() }
         @objc func changed(_ slider: UISlider) {
-            session.time = Double(slider.value)
-            if !session.scrubbing { session.seek(session.time) }
+            // Track taps must seek even when UIKit does not finish tracking.
+            session.seek(Double(slider.value))
         }
-        @objc func ended() { session.scrubbing = false; session.seek(session.time) }
     }
 
     final class TrackSlider: UISlider {
-        var editingChanged: ((Bool) -> Void)?
         private var dragOffset: CGFloat = 0
         override func beginTracking(_ touch: UITouch, with event: UIEvent?) -> Bool {
-            editingChanged?(true)
             let point = touch.location(in: self)
             let track = trackRect(forBounds: bounds)
             let thumb = thumbRect(forBounds: bounds, trackRect: track, value: value)
@@ -611,14 +603,6 @@ private struct TouchSeekSlider: UIViewRepresentable {
         override func continueTracking(_ touch: UITouch, with event: UIEvent?) -> Bool {
             movePlayhead(to: touch.location(in: self).x - dragOffset)
             return true
-        }
-        override func endTracking(_ touch: UITouch?, with event: UIEvent?) {
-            super.endTracking(touch, with: event)
-            editingChanged?(false)
-        }
-        override func cancelTracking(with event: UIEvent?) {
-            super.cancelTracking(with: event)
-            editingChanged?(false)
         }
         private func movePlayhead(to x: CGFloat) {
             let track = trackRect(forBounds: bounds)

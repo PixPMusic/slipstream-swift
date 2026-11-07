@@ -36,7 +36,8 @@ struct PlayerSheet: View {
     @State private var downloadQualities: [Delivery.Quality] = []
     @State private var downloadError: String?
     @State private var preparingDownload = false
-    private var readingPost: Bool { loading || selectedMedia?.kind == .video ? playerScrolledAway : titleScrolledAway }
+    private var isVideo: Bool { model.demo || selectedMedia?.kind == .video }
+    private var readingPost: Bool { loading || isVideo ? playerScrolledAway : titleScrolledAway }
     private var selectedMedia: PostAttachment? { detail?.media.first { $0.id == selectedMediaID } }
     private var downloadExtension: String {
         guard selectedMedia?.kind == .picture else { return "mp4" }
@@ -59,9 +60,9 @@ struct PlayerSheet: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
-                if loading || selectedMedia?.isPlayable == true {
+                if model.demo || loading || selectedMedia?.isPlayable == true {
                     ZStack {
-                        NativeVideoPlayer(player: player, onControlsVisibility: { controlsVisible = $0 }, onPresentationChange: { presentingFullscreen = $0 }, qualities: qualities, qualityID: Binding(get: { qualityID }, set: { qualityID = $0; play() }), backAction: { dismiss() }, windowChromeVisible: selectedMedia?.kind == .video ? controlsVisible || playerScrolledAway || !model.sidebarHidden : nil)
+                        NativeVideoPlayer(player: player, onControlsVisibility: { controlsVisible = $0 }, onPresentationChange: { presentingFullscreen = $0 }, qualities: qualities, qualityID: Binding(get: { qualityID }, set: { qualityID = $0; play() }), backAction: { dismiss() }, windowChromeVisible: isVideo ? controlsVisible || playerScrolledAway || !model.sidebarHidden : nil)
                             #if os(iOS)
                             .onPlayerRailChange { session, enabled in railSession = session; hasRail = enabled }
                             #endif
@@ -124,8 +125,8 @@ struct PlayerSheet: View {
         .modifier(PlayerScrollTracking(playerHeight: playerHeight, scrolledAway: $playerScrolledAway))
         .modifier(ReadingScrollEdge(reading: readingPost))
         .modifier(ReadingContentClip(reading: readingPost))
-        .modifier(PlayerChrome(hideBack: loading || selectedMedia?.kind == .video, title: post.title, reading: readingPost, immersive: (loading || selectedMedia?.kind == .video) && !playerScrolledAway, rail: usesRail))
-        .modifier(PlayerBackToolbar(visible: (loading || selectedMedia?.kind == .video) && (controlsVisible || playerScrolledAway), nonVideo: !loading && selectedMedia?.kind != .video, action: { dismiss() }))
+        .modifier(PlayerChrome(hideBack: loading || isVideo, title: post.title, reading: readingPost, immersive: (loading || isVideo) && !playerScrolledAway, rail: usesRail))
+        .modifier(PlayerBackToolbar(visible: (loading || isVideo) && (controlsVisible || playerScrolledAway), nonVideo: !loading && !isVideo, action: { dismiss() }))
         #if os(iOS)
         .modifier(PlayerRailToolbar(session: railSession, enabled: hasRail, close: { dismiss() }))
         .toolbar {
@@ -191,7 +192,11 @@ struct PlayerSheet: View {
     }
     @MainActor private func load() async {
         guard let api = model.api else {
-            error = "This is a demo post. Sign in to Floatplane to watch your subscriptions."
+            if model.demo, let url = Bundle.main.url(forResource: "DemoPlayback", withExtension: "mp4") {
+                player.replaceCurrentItem(with: AVPlayerItem(url: url))
+                playerReady = true
+                player.play()
+            }
             return
         }
         loading = true; error = nil
