@@ -189,8 +189,12 @@ private struct LibrarySidebar: View {
     var body: some View {
         VStack(spacing: 0) {
             List(selection: $selection) {
-                Label("Library", systemImage: "play.rectangle.on.rectangle").tag("all")
-                Label("Live", systemImage: "dot.radiowaves.left.and.right").tag("live")
+                NavigationLink(value: "all") {
+                    Label("Library", systemImage: "play.rectangle.on.rectangle")
+                }
+                NavigationLink(value: "live") {
+                    Label("Live", systemImage: "dot.radiowaves.left.and.right")
+                }
                 Section {
                     ForEach(model.creators) { creator in
                         CreatorSidebarBranch(creator: creator, channels: model.channelsByCreator[creator.id] ?? [])
@@ -224,14 +228,17 @@ private struct CreatorSidebarBranch: View {
     var body: some View {
         DisclosureGroup(isExpanded: $expanded) {
             ForEach(channels) { channel in
-                Label {
-                    Text(channel.title).lineLimit(1)
-                } icon: { CreatorAvatar(url: channel.icon?.url, size: 20) }
-                    .tag(channel.id)
+                NavigationLink(value: channel.id) {
+                    Label {
+                        Text(channel.title).lineLimit(1)
+                    } icon: { CreatorAvatar(url: channel.icon?.url, size: 20) }
+                }
             }
         } label: {
-            Label { Text(creator.title) } icon: { CreatorAvatar(url: creator.icon?.url, size: 22) }
-        }.tag(creator.id)
+            NavigationLink(value: creator.id) {
+                Label { Text(creator.title) } icon: { CreatorAvatar(url: creator.icon?.url, size: 22) }
+            }
+        }
     }
 }
 
