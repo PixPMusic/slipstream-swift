@@ -673,7 +673,8 @@ private struct FeedBannerChrome: ViewModifier {
         .toolbarBackground(enabled && !scrolledAway ? .hidden : .visible, for: .windowToolbar)
         .modifier(ToolbarTitleVisibility(hidden: enabled && !scrolledAway))
         #else
-        .ignoresSafeArea(.container, edges: enabled ? .top : [])
+        // Keep channel artwork below the iPhone status bar and notch.
+        .ignoresSafeArea(.container, edges: enabled && UIDevice.current.userInterfaceIdiom == .pad ? .top : [])
         .toolbarBackground(enabled && !scrolledAway ? .hidden : .automatic, for: .navigationBar)
         .navigationTitle(enabled && !scrolledAway ? "" : title)
         .toolbar {
