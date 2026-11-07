@@ -501,7 +501,10 @@ struct FeedView: View {
             } catch {}
         }
         .navigationDestination(item: $selected) { post in PlayerSheet(post: post) }
-        .refreshable { await load(reset: true) }
+        .refreshable {
+            // SwiftUI can cancel its refresh task as compact scroll content updates.
+            await Task { await load(reset: true) }.value
+        }
         .modifier(ReadingContentClip(reading: banner != nil && bannerScrolledAway))
         .modifier(ReadingScrollEdge(reading: banner != nil && bannerScrolledAway))
         .modifier(FeedBannerChrome(title: title, enabled: banner != nil, bannerHeight: bannerHeight, scrolledAway: $bannerScrolledAway))
@@ -526,9 +529,10 @@ struct FeedView: View {
         defer { if requestID == currentRequest { loading = false } }
         var nextOffsets = reset ? [:] : offsets
         var nextExhausted: Set<String> = reset ? [] : exhausted
-        if reset { posts = [] }
         do {
-            var next = posts
+            // Keep the scroll content alive while refreshable owns the request.
+            // Replace it only after a successful response, including an empty one.
+            var next = reset ? [] : posts
             for creator in creators where !nextExhausted.contains(creator.id) {
                 let batch = try await api.posts(creator: creator.id, channel: channel?.id, offset: nextOffsets[creator.id] ?? 0, search: search)
                 try Task.checkCancellation()
