@@ -8,6 +8,7 @@ import Security
     var chatPreview = false
     #endif
     var emotes: [FPEmote] = []
+    var usesSwipeSidebar = false
     var sidebarHidden = false
     #if os(macOS)
     var windowFullscreen = false
