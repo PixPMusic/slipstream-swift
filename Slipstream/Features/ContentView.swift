@@ -321,7 +321,9 @@ private struct LibrarySidebar: View {
             }
             .listStyle(.sidebar)
             .labelStyle(.titleAndIcon)
+            #if os(macOS)
             .clipped()
+            #endif
             AccountFooter()
                 #if os(iOS)
                 .padding(.bottom, 16)
