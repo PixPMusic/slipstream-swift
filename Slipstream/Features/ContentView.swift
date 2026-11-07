@@ -7,7 +7,7 @@ struct ContentView: View {
     @State private var compactPath: [String] = []
     #endif
     @State private var selection = "all"
-    @State private var selectedPost: Post?
+    @State private var selectedPost: PostPlayback?
     @State private var columnVisibility = NavigationSplitViewVisibility.all
     var body: some View {
         @Bindable var model = model
@@ -20,7 +20,7 @@ struct ContentView: View {
                     NavigationStack(path: $compactPath) {
                         LibrarySidebar(selection: sidebarSelection, navigate: { compactPath = [$0] })
                             .navigationDestination(for: String.self) { value in
-                                LibraryDestination(selection: value, selectedPost: $selectedPost)
+                                LibraryDestination(selection: value, selectedPost: postSelection)
                             }
                     }
                 } else { splitLibrary }
@@ -29,8 +29,8 @@ struct ContentView: View {
                 #endif
             } else { WelcomeView() }
         }
-        .onChange(of: model.user?.id) { _, _ in selectedPost = nil }
-        .onChange(of: model.demo) { _, _ in selectedPost = nil }
+        .onChange(of: model.user?.id) { _, _ in postSelection.wrappedValue = nil }
+        .onChange(of: model.demo) { _, _ in postSelection.wrappedValue = nil }
         #if os(iOS)
         .background {
             if #available(iOS 27.1, *) {
@@ -69,12 +69,19 @@ struct ContentView: View {
         } message: { Text(model.error ?? "") }
     }
 
+    private var postSelection: Binding<PostPlayback?> {
+        Binding(get: { selectedPost }, set: { value in
+            if selectedPost !== value { selectedPost?.stop() }
+            selectedPost = value
+        })
+    }
+
     // List clears its optional selection when a compact destination is pushed.
     // Keep the active feed so expanding back to two columns restores it.
     private var sidebarSelection: Binding<String?> {
         Binding(get: { selection }, set: {
             if let value = $0, value != selection {
-                selectedPost = nil
+                postSelection.wrappedValue = nil
                 selection = value
             }
         })
@@ -93,7 +100,7 @@ struct ContentView: View {
                 })
         } detail: {
             NavigationStack {
-                LibraryDestination(selection: selection, selectedPost: $selectedPost)
+                LibraryDestination(selection: selection, selectedPost: postSelection)
             }.id(selection)
                 .modifier(SwipeSidebarToolbar())
         }
@@ -130,7 +137,7 @@ struct ContentView: View {
 private struct LibraryDestination: View {
     @Environment(AppModel.self) private var model
     let selection: String
-    @Binding var selectedPost: Post?
+    @Binding var selectedPost: PostPlayback?
 
     var body: some View {
         if selection == "live" { LiveLibraryView() }
@@ -446,7 +453,7 @@ struct FeedView: View {
     @State private var error: String?
     @State private var search = ""
     @State private var requestID = UUID()
-    @Binding var selected: Post?
+    @Binding var selected: PostPlayback?
     @State private var feedWidth: CGFloat = 0
     @State private var bannerHeight: CGFloat = 0
     @State private var bannerScrolledAway = false
@@ -471,7 +478,7 @@ struct FeedView: View {
                 }
                 LazyVGrid(columns: gridColumns, alignment: .leading, spacing: 18) {
                     ForEach(posts) { post in
-                        FeedPostButton(post: post, creator: channel == nil ? (post.channel?.title ?? post.channel.flatMap { model.channelsByID[$0.id]?.title } ?? post.creator.title) : nil, demo: model.demo, titleLines: cardTitleLines) { selected = post }
+                        FeedPostButton(post: post, creator: channel == nil ? (post.channel?.title ?? post.channel.flatMap { model.channelsByID[$0.id]?.title } ?? post.creator.title) : nil, demo: model.demo, titleLines: cardTitleLines) { selected = PostPlayback(post: post) }
                     }
                 }.padding(20)
                 if loading { ProgressView().padding(24) }
@@ -509,7 +516,9 @@ struct FeedView: View {
                 await load(reset: true)
             } catch {}
         }
-        .navigationDestination(item: $selected) { post in PlayerSheet(post: post) }
+        .navigationDestination(item: $selected) { playback in
+            PlayerSheet(post: playback.post, playback: playback)
+        }
         .refreshable {
             // SwiftUI can cancel its refresh task as compact scroll content updates.
             await Task { await load(reset: true) }.value

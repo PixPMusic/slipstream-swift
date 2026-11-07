@@ -24,12 +24,14 @@
 		2F21C697E5DCE3AC6809628A /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7944C6CF1A2E6EE299900750 /* ContentView.swift */; };
 		36C083EF2642EB7C4752585E /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCB530320DEE1BA101B2CB5F /* Models.swift */; };
 		3DAFB3DC3A5E6FB74648ECB6 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CF53FFE345A469236F78555 /* AppModel.swift */; };
+		3E7F6F9076D1714682616837 /* PostPlayback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E897535415D6E8AEB95327 /* PostPlayback.swift */; };
 		3F7FFCFF6619482D86E28705 /* LoginNavigationPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57BD584144D8B2EDF7EA8CB2 /* LoginNavigationPolicy.swift */; };
 		408BCF3F6D958ACFC3549E1A /* ThirdPartyNotices.txt in Resources */ = {isa = PBXBuildFile; fileRef = 0DF775DA1076B274FFC04B02 /* ThirdPartyNotices.txt */; };
 		41AA099A40B2AE8253859738 /* PlayerSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB242B932E00B27F8A458081 /* PlayerSheet.swift */; };
 		41F94AA8A5BD72BBEDDCBBC2 /* DemoPlayback.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = A56D3CB0AFF76C764450785A /* DemoPlayback.mp4 */; };
 		450CA2060564CBDA2C33CDC2 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CF53FFE345A469236F78555 /* AppModel.swift */; };
 		454A200DCC6B0C6F3B9FD1D8 /* FloatplaneAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83FF96F06F318D64F8242E15 /* FloatplaneAPI.swift */; };
+		55A78EA5CFD5C75ACE8BA697 /* PostPlayback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E897535415D6E8AEB95327 /* PostPlayback.swift */; };
 		590132DBE86C3990DFE69884 /* SearchField.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0184CAD8EE88CEAD0D69DC1 /* SearchField.swift */; };
 		659078789DA884CE0440AFB3 /* ThumbnailHover.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E30C4C1E4073360D7CCC4CF /* ThumbnailHover.swift */; };
 		6E7BE44CE466DC4B524CE7BF /* LoginNavigationPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57BD584144D8B2EDF7EA8CB2 /* LoginNavigationPolicy.swift */; };
@@ -64,6 +66,7 @@
 		203FA11002098B15C544D81C /* SessionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionStore.swift; sourceTree = "<group>"; };
 		2468D54C41E9DD248562DEB2 /* iOS.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = iOS.xcassets; sourceTree = "<group>"; };
 		29ED3A1DD5E325132B0C4F7A /* DemoData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoData.swift; sourceTree = "<group>"; };
+		37E897535415D6E8AEB95327 /* PostPlayback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostPlayback.swift; sourceTree = "<group>"; };
 		3AD17E02EB7AC783AA9D3B0B /* Slipstream.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Slipstream.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		57BD584144D8B2EDF7EA8CB2 /* LoginNavigationPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginNavigationPolicy.swift; sourceTree = "<group>"; };
 		601A668EC2BA18625B7352F5 /* LiveChat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveChat.swift; sourceTree = "<group>"; };
@@ -123,6 +126,7 @@
 				83FF96F06F318D64F8242E15 /* FloatplaneAPI.swift */,
 				57BD584144D8B2EDF7EA8CB2 /* LoginNavigationPolicy.swift */,
 				BCB530320DEE1BA101B2CB5F /* Models.swift */,
+				37E897535415D6E8AEB95327 /* PostPlayback.swift */,
 				203FA11002098B15C544D81C /* SessionStore.swift */,
 			);
 			path = Core;
@@ -330,6 +334,7 @@
 				280628833371FBE9C609897D /* LoginSheet.swift in Sources */,
 				22EB248F9048D5C826F80F25 /* Models.swift in Sources */,
 				EE7165DD4B6A754E00EB3CC8 /* PlayerSheet.swift in Sources */,
+				3E7F6F9076D1714682616837 /* PostPlayback.swift in Sources */,
 				B7B02124EBD3622A412C79C8 /* SearchField.swift in Sources */,
 				137AA411F6A5BA7A08DEAAAF /* SessionStore.swift in Sources */,
 				0BA6BE2E3F2F031F24C2BA9C /* SlipstreamApp.swift in Sources */,
@@ -356,6 +361,7 @@
 				B602B8AC9D2B1A62E799CC15 /* LoginSheet.swift in Sources */,
 				36C083EF2642EB7C4752585E /* Models.swift in Sources */,
 				41AA099A40B2AE8253859738 /* PlayerSheet.swift in Sources */,
+				55A78EA5CFD5C75ACE8BA697 /* PostPlayback.swift in Sources */,
 				590132DBE86C3990DFE69884 /* SearchField.swift in Sources */,
 				2EF6F3E58ED40B5EB51554D5 /* SessionStore.swift in Sources */,
 				053694C6EB8921C25833073D /* SlipstreamApp.swift in Sources */,

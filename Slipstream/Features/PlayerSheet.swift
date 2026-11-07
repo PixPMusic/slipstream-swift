@@ -15,33 +15,21 @@ struct PlayerSheet: View {
     @State private var playerScrolledAway = false
     @State private var titleScrolledAway = false
     @State private var playerHeight: CGFloat = 0
-    @State private var detail: PostDetail?
-    @State private var qualities: [Delivery.Quality] = []
-    @State private var videoID = ""
-    @State private var selectedMediaID = ""
-    @State private var loadedMediaID = ""
-    @State private var pictureURL: URL?
-    @State private var qualityID = ""
-    @State private var player = AVPlayer()
-    @State private var loading = false
-    @State private var playerReady = false
-    @State private var playbackGeneration = UUID()
-    @State private var error: String?
-    @State private var playbackObservation: NSKeyValueObservation?
-    @State private var liked = false
-    @State private var disliked = false
-    @State private var likeCount = 0
-    @State private var dislikeCount = 0
-    @State private var liking = false
-    @State private var downloadQualities: [Delivery.Quality] = []
-    @State private var downloadError: String?
-    @State private var preparingDownload = false
+    @State private var playback: PostPlayback
+    private let ownsPlayback: Bool
+
+    init(post: Post, playback: PostPlayback? = nil) {
+        self.post = post
+        ownsPlayback = playback == nil
+        _playback = State(initialValue: playback ?? PostPlayback(post: post))
+    }
+
     private var isVideo: Bool { model.demo || selectedMedia?.kind == .video }
-    private var readingPost: Bool { loading || isVideo ? playerScrolledAway : titleScrolledAway }
-    private var selectedMedia: PostAttachment? { detail?.media.first { $0.id == selectedMediaID } }
+    private var readingPost: Bool { playback.loading || isVideo ? playerScrolledAway : titleScrolledAway }
+    private var selectedMedia: PostAttachment? { playback.detail?.media.first { $0.id == playback.selectedMediaID } }
     private var downloadExtension: String {
         guard selectedMedia?.kind == .picture else { return "mp4" }
-        guard let suffix = pictureURL?.pathExtension, !suffix.isEmpty else { return "jpg" }
+        guard let suffix = playback.pictureURL?.pathExtension, !suffix.isEmpty else { return "jpg" }
         return suffix
     }
     private var channelName: String {
@@ -58,16 +46,17 @@ struct PlayerSheet: View {
         #endif
     }
     var body: some View {
+        @Bindable var playback = playback
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
-                if model.demo || loading || selectedMedia?.isPlayable == true {
+                if model.demo || playback.loading || selectedMedia?.isPlayable == true {
                     ZStack {
-                        NativeVideoPlayer(player: player, onControlsVisibility: { controlsVisible = $0 }, onPresentationChange: { presentingFullscreen = $0 }, qualities: qualities, qualityID: Binding(get: { qualityID }, set: { qualityID = $0; play() }), backAction: { dismiss() }, windowChromeVisible: isVideo ? controlsVisible || playerScrolledAway || !model.sidebarHidden : nil)
+                        NativeVideoPlayer(player: playback.player, onControlsVisibility: { controlsVisible = $0 }, onPresentationChange: { presentingFullscreen = $0 }, qualities: playback.qualities, qualityID: Binding(get: { playback.qualityID }, set: { playback.qualityID = $0; play() }), backAction: { dismiss() }, windowChromeVisible: isVideo ? controlsVisible || playerScrolledAway || !model.sidebarHidden : nil)
                             #if os(iOS)
                             .onPlayerRailChange { session, enabled in railSession = session; hasRail = enabled }
                             #endif
                             .aspectRatio(selectedMedia?.kind == .audio ? 5 : 16 / 9, contentMode: .fit).background(.black)
-                        if loading || !playerReady {
+                        if playback.loading || !playback.playerReady {
                             PostArtwork(url: post.thumbnail?.url)
                             Color.black.opacity(0.45)
                             ProgressView("Loading video…").tint(.white).foregroundStyle(.white)
@@ -76,7 +65,7 @@ struct PlayerSheet: View {
                     .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { playerHeight = $0 }
                     .background { GeometryReader { geometry in Color.clear.preference(key: PlayerBottomKey.self, value: geometry.frame(in: .named("postScroll")).maxY) } }
                 } else if selectedMedia?.kind == .picture {
-                    AsyncImage(url: pictureURL ?? selectedMedia?.file.thumbnail?.url) { image in image.resizable().scaledToFit() }
+                    AsyncImage(url: playback.pictureURL ?? selectedMedia?.file.thumbnail?.url) { image in image.resizable().scaledToFit() }
                         placeholder: { ProgressView().frame(height: 200) }
                         .frame(maxWidth: .infinity, maxHeight: 600)
                 } else if selectedMedia?.kind == .gallery {
@@ -85,34 +74,34 @@ struct PlayerSheet: View {
                 VStack(alignment: .leading, spacing: 18) {
                     Text(post.title).font(.title2.weight(.semibold)).textSelection(.enabled)
                         .onGeometryChange(for: Bool.self) { $0.frame(in: .named("postScroll")).maxY < 0 } action: { titleScrolledAway = $0 }
-                    if let media = detail?.media, media.count > 1 {
-                        AttachmentPicker(media: media, selection: $selectedMediaID)
+                    if let media = playback.detail?.media, media.count > 1 {
+                        AttachmentPicker(media: media, selection: $playback.selectedMediaID)
                     }
                     PostMetadataRow(creator: channelName, icon: channelIcon, date: post.date) {
                         HStack(spacing: 10) {
                             if !usesRail {
                                 if selectedMedia != nil {
-                                    PostDownloadMenu(preparing: preparingDownload, disabled: model.demo, qualities: downloadQualities) { quality in
+                                    PostDownloadMenu(preparing: playback.preparingDownload, disabled: model.demo, qualities: playback.downloadQualities) { quality in
                                         model.downloads.start(url: quality.url, title: post.title, fileExtension: downloadExtension)
                                     }
                                 }
                                 #if os(macOS)
-                                PostQualityPicker(qualities: qualities, qualityID: Binding(get: { qualityID }, set: { qualityID = $0; play() }))
+                                PostQualityPicker(qualities: playback.qualities, qualityID: Binding(get: { playback.qualityID }, set: { playback.qualityID = $0; play() }))
                                 #endif
-                                PostFeedbackControl(liked: liked, disliked: disliked, likes: likeCount, dislikes: dislikeCount, disabled: liking || model.demo,
+                                PostFeedbackControl(liked: playback.liked, disliked: playback.disliked, likes: playback.likeCount, dislikes: playback.dislikeCount, disabled: playback.liking || model.demo,
                                                     like: { Task { await toggleReaction(dislike: false) } }, dislike: { Task { await toggleReaction(dislike: true) } })
                             }
                         }.controlSize(.regular).fixedSize()
                     }
-                    if detail?.media.isEmpty == true, let text = detail?.text ?? post.text { PostDescription(text: Self.plainText(text), collapsible: false) }
+                    if playback.detail?.media.isEmpty == true, let text = playback.detail?.text ?? post.text { PostDescription(text: Self.plainText(text), collapsible: false) }
                     DownloadStatusView(download: model.downloads)
-                    if let downloadError { Text(downloadError).font(.caption).foregroundStyle(.secondary) }
-                    if let error {
+                    if let downloadError = playback.downloadError { Text(downloadError).font(.caption).foregroundStyle(.secondary) }
+                    if let error = playback.error {
                         HStack { Text(error).foregroundStyle(.secondary); Button("Retry") { Task { await load() } }.disabled(model.demo) }
                     }
-                    if detail?.media.isEmpty != true, let text = detail?.text ?? post.text { PostDescription(text: Self.plainText(text)) }
+                    if playback.detail?.media.isEmpty != true, let text = playback.detail?.text ?? post.text { PostDescription(text: Self.plainText(text)) }
                     Divider().padding(.vertical, 4)
-                    CommentsView(postID: post.id, count: detail?.comments)
+                    CommentsView(postID: post.id, count: playback.detail?.comments)
                 }.padding(24).frame(maxWidth: 640).frame(maxWidth: .infinity)
             }.background {
                 #if os(macOS)
@@ -125,8 +114,8 @@ struct PlayerSheet: View {
         .modifier(PlayerScrollTracking(playerHeight: playerHeight, scrolledAway: $playerScrolledAway))
         .modifier(ReadingScrollEdge(reading: readingPost))
         .modifier(ReadingContentClip(reading: readingPost))
-        .modifier(PlayerChrome(hideBack: loading || isVideo, title: post.title, reading: readingPost, immersive: (loading || isVideo) && !playerScrolledAway, rail: usesRail))
-        .modifier(PlayerBackToolbar(visible: (loading || isVideo) && (controlsVisible || playerScrolledAway), nonVideo: !loading && !isVideo, action: { dismiss() }))
+        .modifier(PlayerChrome(hideBack: playback.loading || isVideo, title: post.title, reading: readingPost, immersive: (playback.loading || isVideo) && !playerScrolledAway, rail: usesRail))
+        .modifier(PlayerBackToolbar(visible: (playback.loading || isVideo) && (controlsVisible || playerScrolledAway), nonVideo: !playback.loading && !isVideo, action: { dismiss() }))
         #if os(iOS)
         .modifier(PlayerRailToolbar(session: railSession, enabled: hasRail, close: { dismiss() }))
         .toolbar {
@@ -134,15 +123,15 @@ struct PlayerSheet: View {
                 ToolbarItem(placement: .bottomBar) { Spacer() }
                 ToolbarItem(placement: .bottomBar) {
                     if selectedMedia != nil {
-                        PostDownloadMenu(preparing: preparingDownload, disabled: model.demo, qualities: downloadQualities) { quality in
+                        PostDownloadMenu(preparing: playback.preparingDownload, disabled: model.demo, qualities: playback.downloadQualities) { quality in
                             model.downloads.start(url: quality.url, title: post.title, fileExtension: downloadExtension)
                         }
                     }
                 }
                 if #available(iOS 26.0, *) { ToolbarSpacer(.fixed, placement: .bottomBar) }
                 ToolbarItemGroup(placement: .bottomBar) {
-                    Button(liked ? "Unlike post" : "Like post", systemImage: liked ? "hand.thumbsup.fill" : "hand.thumbsup") { Task { await toggleReaction(dislike: false) } }.disabled(liking || model.demo).tint(.white).accessibilityValue(likeCount.formatted())
-                    Button(disliked ? "Remove dislike" : "Dislike post", systemImage: disliked ? "hand.thumbsdown.fill" : "hand.thumbsdown") { Task { await toggleReaction(dislike: true) } }.disabled(liking || model.demo).tint(.white).accessibilityValue(dislikeCount.formatted())
+                    Button(playback.liked ? "Unlike post" : "Like post", systemImage: playback.liked ? "hand.thumbsup.fill" : "hand.thumbsup") { Task { await toggleReaction(dislike: false) } }.disabled(playback.liking || model.demo).tint(.white).accessibilityValue(playback.likeCount.formatted())
+                    Button(playback.disliked ? "Remove dislike" : "Dislike post", systemImage: playback.disliked ? "hand.thumbsdown.fill" : "hand.thumbsdown") { Task { await toggleReaction(dislike: true) } }.disabled(playback.liking || model.demo).tint(.white).accessibilityValue(playback.dislikeCount.formatted())
                 }
             }
         }
@@ -151,89 +140,85 @@ struct PlayerSheet: View {
         .onChange(of: controlsVisible) { _, value in model.playerControlsVisible = value || playerScrolledAway }
         .onChange(of: playerScrolledAway) { _, value in model.playerControlsVisible = value || controlsVisible }
         #endif
-        .task { if detail == nil { await load() } }
-        .task(id: selectedMediaID) {
-            if !selectedMediaID.isEmpty && (loadedMediaID != selectedMediaID || player.currentItem == nil) {
+        .task { if playback.detail == nil && playback.player.currentItem == nil { await load() } }
+        .task(id: playback.selectedMediaID) {
+            if !playback.selectedMediaID.isEmpty && (playback.loadedMediaID != playback.selectedMediaID || playback.player.currentItem == nil) {
                 await loadSelectedMedia()
             }
         }
         .onDisappear {
-            guard !presentingFullscreen else { return }
-            player.pause()
-            player.replaceCurrentItem(with: nil)
-            playbackObservation = nil
-            playbackGeneration = UUID()
+            if ownsPlayback && !presentingFullscreen { playback.stop() }
         }
     }
     private func toggleReaction(dislike: Bool) async {
-        guard let api = model.api, !liking else { return }
-        liking = true
-        defer { liking = false }
+        guard let api = model.api, !playback.liking else { return }
+        playback.liking = true
+        defer { playback.liking = false }
         do {
             let interactions = try await (dislike ? api.dislike(post: post.id) : api.like(post: post.id))
             let newLike = interactions.contains("like")
             let newDislike = interactions.contains("dislike")
-            likeCount = max(0, likeCount + (newLike ? 1 : 0) - (liked ? 1 : 0))
-            dislikeCount = max(0, dislikeCount + (newDislike ? 1 : 0) - (disliked ? 1 : 0))
-            liked = newLike; disliked = newDislike
+            playback.likeCount = max(0, playback.likeCount + (newLike ? 1 : 0) - (playback.liked ? 1 : 0))
+            playback.dislikeCount = max(0, playback.dislikeCount + (newDislike ? 1 : 0) - (playback.disliked ? 1 : 0))
+            playback.liked = newLike; playback.disliked = newDislike
         } catch { report(error) }
     }
     private func prepareDownload() async {
-        guard let api = model.api, !videoID.isEmpty else { return }
-        preparingDownload = true
-        defer { preparingDownload = false }
+        guard let api = model.api, !playback.videoID.isEmpty else { return }
+        playback.preparingDownload = true
+        defer { playback.preparingDownload = false }
         do {
-            let delivery = try await api.delivery(video: videoID, scenario: "download")
+            let delivery = try await api.delivery(video: playback.videoID, scenario: "download")
             try Task.checkCancellation()
-            downloadQualities = delivery.qualities
-            guard !downloadQualities.isEmpty else { throw APIError.noVideo }
-            downloadError = nil
-        } catch { if !Task.isCancelled { downloadError = "Downloads are unavailable for this video." } }
+            playback.downloadQualities = delivery.qualities
+            guard !playback.downloadQualities.isEmpty else { throw APIError.noVideo }
+            playback.downloadError = nil
+        } catch { if !Task.isCancelled { playback.downloadError = "Downloads are unavailable for this video." } }
     }
     @MainActor private func load() async {
         guard let api = model.api else {
-            if model.demo, let url = Bundle.main.url(forResource: "DemoPlayback", withExtension: "mp4") {
-                player.replaceCurrentItem(with: AVPlayerItem(url: url))
-                playerReady = true
-                player.play()
+            if model.demo, !playback.closed, let url = Bundle.main.url(forResource: "DemoPlayback", withExtension: "mp4") {
+                playback.player.replaceCurrentItem(with: AVPlayerItem(url: url))
+                playback.playerReady = true
+                playback.player.play()
             }
             return
         }
-        loading = true; error = nil
-        defer { loading = false }
+        playback.loading = true; playback.error = nil
+        defer { playback.loading = false }
         do {
             let detail = try await api.post(id: post.id)
             try Task.checkCancellation()
-            self.detail = detail
-            liked = detail.userInteraction?.contains("like") == true
-            disliked = detail.userInteraction?.contains("dislike") == true
-            likeCount = detail.likes ?? 0
-            dislikeCount = detail.dislikes ?? 0
+            playback.detail = detail
+            playback.liked = detail.userInteraction?.contains("like") == true
+            playback.disliked = detail.userInteraction?.contains("dislike") == true
+            playback.likeCount = detail.likes ?? 0
+            playback.dislikeCount = detail.dislikes ?? 0
             guard let first = detail.media.first(where: { $0.file.isAccessible != false }) else { return }
-            if selectedMediaID == first.id { await loadSelectedMedia() }
-            else { selectedMediaID = first.id }
+            if playback.selectedMediaID == first.id { await loadSelectedMedia() }
+            else { playback.selectedMediaID = first.id }
         } catch { report(error) }
     }
     @MainActor private func loadSelectedMedia() async {
         guard let media = selectedMedia, let api = model.api else { return }
-        loadedMediaID = selectedMediaID
-        player.pause()
-        player.replaceCurrentItem(with: nil)
-        qualities = []; downloadQualities = []; pictureURL = nil; error = nil
-        playbackObservation = nil; playbackGeneration = UUID(); playerReady = false
+        playback.loadedMediaID = playback.selectedMediaID
+        playback.player.pause()
+        playback.player.replaceCurrentItem(with: nil)
+        playback.qualities = []; playback.downloadQualities = []; playback.pictureURL = nil; playback.error = nil
+        playback.playbackObservation = nil; playback.playbackGeneration = UUID(); playback.playerReady = false
         if media.isPlayable {
-            videoID = media.file.guid
+            playback.videoID = media.file.guid
             await loadDelivery()
             await prepareDownload()
         } else {
-            videoID = ""
+            playback.videoID = ""
             if media.kind == .picture {
                 do {
                     let image = try await api.picture(id: media.id)
                     try Task.checkCancellation()
-                    pictureURL = image.originalURL
-                    if let pictureURL {
-                        downloadQualities = [.init(id: media.id, label: "Original image", url: pictureURL, order: 0)]
+                    playback.pictureURL = image.originalURL
+                    if let pictureURL = playback.pictureURL {
+                        playback.downloadQualities = [.init(id: media.id, label: "Original image", url: pictureURL, order: 0)]
                     }
                 } catch { report(error) }
             }
@@ -241,46 +226,46 @@ struct PlayerSheet: View {
     }
     @MainActor private func loadDelivery() async {
         guard let api = model.api else { return }
-        player.pause()
-        player.replaceCurrentItem(with: nil)
-        loading = true; error = nil
-        defer { loading = false }
+        playback.player.pause()
+        playback.player.replaceCurrentItem(with: nil)
+        playback.loading = true; playback.error = nil
+        defer { playback.loading = false }
         do {
-            let delivery = try await api.delivery(video: videoID)
+            let delivery = try await api.delivery(video: playback.videoID)
             try Task.checkCancellation()
-            qualities = delivery.qualities
-            guard let first = qualities.first else { throw APIError.noVideo }
-            qualityID = first.id
+            playback.qualities = delivery.qualities
+            guard let first = playback.qualities.first else { throw APIError.noVideo }
+            playback.qualityID = first.id
             play()
         } catch { report(error) }
     }
     @MainActor private func play() {
-        guard let quality = qualities.first(where: { $0.id == qualityID }) else { return }
-        let time = player.currentTime()
-        let resume = player.currentItem == nil || player.rate != 0
+        guard !playback.closed, let quality = playback.qualities.first(where: { $0.id == playback.qualityID }) else { return }
+        let time = playback.player.currentTime()
+        let resume = playback.player.currentItem == nil || playback.player.rate != 0
         let cookies = model.cookie?.httpCookie.map { [$0] } ?? []
         let asset = AVURLAsset(url: quality.url, options: [AVURLAssetHTTPCookiesKey: cookies])
         let item = AVPlayerItem(asset: asset)
-        playerReady = false
+        playback.playerReady = false
         let generation = UUID()
-        playbackGeneration = generation
-        playbackObservation = item.observe(\.status, options: [.initial, .new]) { item, _ in
+        playback.playbackGeneration = generation
+        playback.playbackObservation = item.observe(\.status, options: [.initial, .new]) { item, _ in
             let ready = item.status == .readyToPlay
             let failed = item.status == .failed
             Task { @MainActor in
-                guard playbackGeneration == generation else { return }
-                playerReady = ready
-                if failed { error = "Video playback failed. Try another quality or reload the video." }
+                guard playback.playbackGeneration == generation else { return }
+                playback.playerReady = ready
+                if failed { playback.error = "Video playback failed. Try another quality or reload the video." }
             }
         }
-        player.replaceCurrentItem(with: item)
-        if time.isNumeric && time.seconds > 0 { player.seek(to: time, toleranceBefore: .zero, toleranceAfter: .zero) }
-        player.isMuted = ProcessInfo.processInfo.arguments.contains("--mute")
-        if resume { player.play() }
+        playback.player.replaceCurrentItem(with: item)
+        if time.isNumeric && time.seconds > 0 { playback.player.seek(to: time, toleranceBefore: .zero, toleranceAfter: .zero) }
+        playback.player.isMuted = ProcessInfo.processInfo.arguments.contains("--mute")
+        if resume { playback.player.play() }
     }
     @MainActor private func report(_ error: Error) {
         if error is CancellationError || (error as? URLError)?.code == .cancelled { return }
-        self.error = error.localizedDescription
+        playback.error = error.localizedDescription
         if error as? APIError == .signedOut { model.handle(error) }
     }
     // Display a plain native description without executing HTML from posts.
