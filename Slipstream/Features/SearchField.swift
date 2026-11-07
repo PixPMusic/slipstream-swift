@@ -74,7 +74,8 @@ struct FeedSearch: ViewModifier {
                 .keyboardShortcut("f", modifiers: .command).hidden().accessibilityHidden(true)
         }
         #else
-        content.searchable(text: $text, prompt: "Search")
+        // Keep content actions blue while the system search controls use neutral chrome.
+        content.tint(.blue).searchable(text: $text, prompt: "Search").tint(.primary)
         #endif
     }
 }

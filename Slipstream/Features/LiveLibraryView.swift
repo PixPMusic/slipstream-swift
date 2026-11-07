@@ -23,7 +23,7 @@ struct LiveLibraryView: View {
         .toolbar(model.windowFullscreen ? .hidden : .visible, for: .windowToolbar)
         .onAppear { model.immersiveVideo = false }
         #endif
-        .toolbar { Button("Refresh", systemImage: "arrow.clockwise") { Task { await model.loadCreators() } } }
+        .toolbar { Button("Refresh", systemImage: "arrow.clockwise") { Task { await model.loadCreators() } }.tint(.primary) }
         .navigationDestination(item: $selected) { creator in
             if let stream = creator.liveStream ?? creator.lastLiveStream { LivePlayerView(creator: creator.title, creatorID: creator.id, stream: stream) }
         }

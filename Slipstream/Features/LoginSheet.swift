@@ -14,8 +14,8 @@ struct LoginSheet: View {
                         .font(.caption).foregroundStyle(.secondary)
                 }
                 Spacer()
-                Button("Reload", systemImage: "arrow.clockwise") { browser.retry() }
-                Button("Cancel") { dismiss() }
+                Button("Reload", systemImage: "arrow.clockwise") { browser.retry() }.tint(.primary)
+                Button("Cancel") { dismiss() }.tint(.primary)
             }.padding()
             Divider()
             LoginWebView(browser: browser)
@@ -24,7 +24,7 @@ struct LoginSheet: View {
                 HStack {
                     Text(error).font(.callout).foregroundStyle(.secondary)
                     Spacer()
-                    Button("Retry") { browser.retry() }
+                    Button("Retry") { browser.retry() }.tint(.primary)
                 }.padding()
             }
         }
