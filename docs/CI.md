@@ -2,7 +2,7 @@
 
 ## Pull requests and main
 
-`ci.yml` uses GitHub-hosted macOS runners and Xcode 26.6. It runs the synthetic core tests, an unsigned native Mac compile, and an ad-hoc-signed iOS Simulator compile. A public checkout supplies placeholder identifiers and needs no Apple credentials. No simulator is booted.
+`ci.yml` uses GitHub-hosted macOS runners and Xcode 26.6 to run the synthetic core tests with `swift test`. Full Mac and iOS app builds remain available through the local build scripts. CI needs no Apple credentials and boots no simulator.
 
 The workflow has only `contents: read`, does not persist Git credentials, and receives no signing secrets. There is no privileged `pull_request_target` or `workflow_run` path, shared build cache, or artifact handoff into signing. Fork changes therefore cannot enter the distribution job through a cached build or a PR artifact.
 
