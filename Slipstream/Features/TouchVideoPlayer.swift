@@ -254,6 +254,8 @@ private final class PlaybackSurface: UIView {
             pictureInPicture: { [weak self] in self?.togglePiP() }))
         self.controls = controls
         addChild(controls)
+        // Insets are applied once, in player coordinates, below.
+        controls.safeAreaRegions = []
         controls.view.backgroundColor = .clear
         controls.view.frame = view.bounds
         controls.view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
@@ -267,17 +269,17 @@ private final class PlaybackSurface: UIView {
             controlWindow = window
             controlArea = window.layoutGuide(for: .margins(cornerAdaptation: .horizontal))
         }
-        // UIKit adapts this guide around window controls, and removes that space
-        // when they are absent (for example, in a maximized iPad window).
-        // Read the window's guide because SwiftUI deliberately ignores the
-        // player's safe area to let video extend behind the window controls.
-        let safeFrame = controlArea.map { view.convert($0.layoutFrame, from: window) }
-        let inset = max(16, safeFrame?.minX ?? view.safeAreaInsets.left)
-        // Place the 44pt row directly below the status safe area, matching
-        // the native sidebar toolbar's center line.
-        let topInset = max(12, window.safeAreaInsets.top)
-        if controls?.rootView.leadingInset != inset { controls?.rootView.leadingInset = inset }
-        if controls?.rootView.topInset != topInset { controls?.rootView.topInset = topInset }
+        // The video fills the view; only the chrome stays inside its safe area.
+        // Window corner margins can be very large on a folded phone, so reserve
+        // those only for the inline iPad window controls that need them.
+        let safe = view.safeAreaInsets
+        let windowMargin = !fullscreen && traitCollection.userInterfaceIdiom == .pad
+            ? controlArea.map { view.convert($0.layoutFrame, from: window).minX } ?? 0 : 0
+        let insets = EdgeInsets(top: max(12, safe.top + 8),
+                                leading: max(16, safe.left + 12, windowMargin),
+                                bottom: max(12, safe.bottom + 8),
+                                trailing: max(16, safe.right + 12))
+        if controls?.rootView.insets != insets { controls?.rootView.insets = insets }
     }
     override func viewDidAppear(_ animated: Bool) { super.viewDidAppear(animated); session.reveal() }
     override func viewWillAppear(_ animated: Bool) {
@@ -359,8 +361,7 @@ private final class PlaybackSurface: UIView {
 }
 
 private struct TouchPlayerControls: View {
-    var leadingInset: CGFloat = 16
-    var topInset: CGFloat = 32
+    var insets = EdgeInsets(top: 12, leading: 16, bottom: 12, trailing: 16)
     @Bindable var session: TouchPlayback
     let fullscreen: Bool
     let canPiP: Bool
@@ -372,6 +373,7 @@ private struct TouchPlayerControls: View {
     @State private var seekGeneration = 0
     var body: some View {
         GeometryReader { geometry in
+            let availableWidth = geometry.size.width - insets.leading - insets.trailing
             ZStack {
                 Color.clear.contentShape(Rectangle())
                     .onTapGesture(count: 2, coordinateSpace: .local) { point in
@@ -409,17 +411,14 @@ private struct TouchPlayerControls: View {
                         }
                         TouchPlayerButton(title: fullscreen ? "Exit fullscreen" : "Back", symbol: fullscreen ? "xmark" : "chevron.left", action: close)
                         Spacer()
-                        if geometry.size.width >= 900 {
                         TouchPlayerButton(title: session.muted ? "Unmute" : "Mute", symbol: session.muted ? "speaker.slash.fill" : "speaker.wave.2.fill") {
                             session.toggleMute()
                         }
-                        }
-                    }.padding(.leading, max(0, leadingInset - 12)).padding(.trailing, 4)
+                    }
                     Spacer()
-                    TouchTransportBar(session: session, fullscreen: fullscreen, canPiP: canPiP, compact: geometry.size.width < 900, showTotalTime: geometry.size.width >= 380, expand: expand, pictureInPicture: pictureInPicture)
+                    TouchTransportBar(session: session, fullscreen: fullscreen, canPiP: canPiP, compact: availableWidth < 900, showTotalTime: availableWidth >= 380, expand: expand, pictureInPicture: pictureInPicture)
                 }
-                .padding(.horizontal, 12).padding(.bottom, 12)
-                .padding(.top, topInset)
+                .padding(insets)
                 .opacity(session.visible || voiceOver ? 1 : 0)
                 .allowsHitTesting(session.visible || voiceOver)
                 .accessibilityHidden(!session.visible && !voiceOver)
