@@ -1,0 +1,5 @@
+#include "App.xcconfig"
+// Xcode manages provisioning; App Store export selects distribution signing.
+CODE_SIGN_STYLE = Automatic
+CODE_SIGN_IDENTITY = Apple Development
+PROVISIONING_PROFILE_SPECIFIER =

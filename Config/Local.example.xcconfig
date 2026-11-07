@@ -1,0 +1,10 @@
+// Copy to Local.xcconfig for Xcode and local scripts. Never commit the copy.
+SLIPSTREAM_BUNDLE_ID = com.yourcompany.Slipstream
+DEVELOPMENT_TEAM = YOUR_TEAM_ID
+
+// Optional: pin the Mac Debug identity so Keychain trusts subsequent rebuilds.
+// Find its SHA-1 with: security find-identity -v -p codesigning
+SLIPSTREAM_DEVELOPMENT_IDENTITY = YOUR_DEVELOPMENT_CERTIFICATE_SHA1
+
+// Optional: keep an existing app's Keychain service while changing bundle IDs.
+// SLIPSTREAM_KEYCHAIN_SERVICE = your.existing.service

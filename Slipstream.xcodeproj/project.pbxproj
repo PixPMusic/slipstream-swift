@@ -1,0 +1,645 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		029A70B8DA5BB8942B0EA721 /* EmoteText.swift in Sources */ = {isa = PBXBuildFile; fileRef = C66F5D61E57BDC8A23E8EA44 /* EmoteText.swift */; };
+		053694C6EB8921C25833073D /* SlipstreamApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2EF9506B4C7BE278ED63A42 /* SlipstreamApp.swift */; };
+		083564E65D95D0C16D015C01 /* DemoData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29ED3A1DD5E325132B0C4F7A /* DemoData.swift */; };
+		0BA6BE2E3F2F031F24C2BA9C /* SlipstreamApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2EF9506B4C7BE278ED63A42 /* SlipstreamApp.swift */; };
+		0C389C6D8617F9A59BB636B5 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DE183808A16C5C64122E9BCF /* Assets.xcassets */; };
+		0D6A914CA4B9E7E60DEEBC55 /* DemoData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29ED3A1DD5E325132B0C4F7A /* DemoData.swift */; };
+		137AA411F6A5BA7A08DEAAAF /* SessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 203FA11002098B15C544D81C /* SessionStore.swift */; };
+		187FEC8B39FA0182AEC937E0 /* EmoteText.swift in Sources */ = {isa = PBXBuildFile; fileRef = C66F5D61E57BDC8A23E8EA44 /* EmoteText.swift */; };
+		202DDB945EDFF26AC498BFB2 /* AmazonIVSPlayer in Frameworks */ = {isa = PBXBuildFile; productRef = E9494A911BF28DDB430123C5 /* AmazonIVSPlayer */; };
+		22EB248F9048D5C826F80F25 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCB530320DEE1BA101B2CB5F /* Models.swift */; };
+		234DC734A2F06250A5C4BB28 /* CommentsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0359A8A1F791FCA4B662C46A /* CommentsView.swift */; };
+		280628833371FBE9C609897D /* LoginSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3D89271BA8C7B7A7456AA2A /* LoginSheet.swift */; };
+		2CE0BB0D469B7716F6CAFDB8 /* SocketIO in Frameworks */ = {isa = PBXBuildFile; productRef = F2DD3C9664A9F01354F21156 /* SocketIO */; };
+		2EF6F3E58ED40B5EB51554D5 /* SessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 203FA11002098B15C544D81C /* SessionStore.swift */; };
+		2F21C697E5DCE3AC6809628A /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7944C6CF1A2E6EE299900750 /* ContentView.swift */; };
+		36C083EF2642EB7C4752585E /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCB530320DEE1BA101B2CB5F /* Models.swift */; };
+		3DAFB3DC3A5E6FB74648ECB6 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CF53FFE345A469236F78555 /* AppModel.swift */; };
+		3F7FFCFF6619482D86E28705 /* LoginNavigationPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57BD584144D8B2EDF7EA8CB2 /* LoginNavigationPolicy.swift */; };
+		408BCF3F6D958ACFC3549E1A /* ThirdPartyNotices.txt in Resources */ = {isa = PBXBuildFile; fileRef = 0DF775DA1076B274FFC04B02 /* ThirdPartyNotices.txt */; };
+		41AA099A40B2AE8253859738 /* PlayerSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB242B932E00B27F8A458081 /* PlayerSheet.swift */; };
+		450CA2060564CBDA2C33CDC2 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CF53FFE345A469236F78555 /* AppModel.swift */; };
+		454A200DCC6B0C6F3B9FD1D8 /* FloatplaneAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83FF96F06F318D64F8242E15 /* FloatplaneAPI.swift */; };
+		590132DBE86C3990DFE69884 /* SearchField.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0184CAD8EE88CEAD0D69DC1 /* SearchField.swift */; };
+		659078789DA884CE0440AFB3 /* ThumbnailHover.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E30C4C1E4073360D7CCC4CF /* ThumbnailHover.swift */; };
+		6E7BE44CE466DC4B524CE7BF /* LoginNavigationPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57BD584144D8B2EDF7EA8CB2 /* LoginNavigationPolicy.swift */; };
+		71740CA900927DB5B4EAEA41 /* LiveLibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F102766B01D3223F3AAF8E9 /* LiveLibraryView.swift */; };
+		8B5CED724E93FF0FC00D3A5D /* CommentsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0359A8A1F791FCA4B662C46A /* CommentsView.swift */; };
+		8C523078DF1CE7CD1F53F21A /* LiveLibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F102766B01D3223F3AAF8E9 /* LiveLibraryView.swift */; };
+		8FD93CFCE6FEFE2ED1E89E64 /* ThirdPartyNotices.txt in Resources */ = {isa = PBXBuildFile; fileRef = 0DF775DA1076B274FFC04B02 /* ThirdPartyNotices.txt */; };
+		9546860412BC4CB294BFE3F5 /* DownloadManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71EF7B32901A614D9BAED32F /* DownloadManager.swift */; };
+		96B3A2CB0C0F6391EADAF1E1 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7944C6CF1A2E6EE299900750 /* ContentView.swift */; };
+		97E872A05EA7722C7C048F8A /* DownloadManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71EF7B32901A614D9BAED32F /* DownloadManager.swift */; };
+		9C99DA1B2731FBCFB9CDAAD4 /* TouchVideoPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92AB97F793B17B067EFD5067 /* TouchVideoPlayer.swift */; };
+		A47819CDD2320A6DEFB4BDE4 /* SocketIO in Frameworks */ = {isa = PBXBuildFile; productRef = 6A0C4AAC112D524F5554D6FA /* SocketIO */; };
+		ACA2893948C9F5F0CBAB6DD6 /* Emotes.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4A42D5BE1BF20DDC21C4466 /* Emotes.swift */; };
+		B602B8AC9D2B1A62E799CC15 /* LoginSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3D89271BA8C7B7A7456AA2A /* LoginSheet.swift */; };
+		B7B02124EBD3622A412C79C8 /* SearchField.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0184CAD8EE88CEAD0D69DC1 /* SearchField.swift */; };
+		BA2F957B492CA7BC99B5BD51 /* iOS.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2468D54C41E9DD248562DEB2 /* iOS.xcassets */; };
+		C6689F520CE50CF2A2033918 /* Emotes.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4A42D5BE1BF20DDC21C4466 /* Emotes.swift */; };
+		C8D1BD80B7CB34C3C61C410D /* TouchVideoPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92AB97F793B17B067EFD5067 /* TouchVideoPlayer.swift */; };
+		C98376FCFB8EC060199E0C5F /* LiveChat.swift in Sources */ = {isa = PBXBuildFile; fileRef = 601A668EC2BA18625B7352F5 /* LiveChat.swift */; };
+		CD318C6B72E6FA57EC993617 /* LiveChat.swift in Sources */ = {isa = PBXBuildFile; fileRef = 601A668EC2BA18625B7352F5 /* LiveChat.swift */; };
+		CF5CCC7641FFEABBB094F854 /* FloatplaneAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83FF96F06F318D64F8242E15 /* FloatplaneAPI.swift */; };
+		EE7165DD4B6A754E00EB3CC8 /* PlayerSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB242B932E00B27F8A458081 /* PlayerSheet.swift */; };
+		FEF63D2F7E4F2BF4B5758D0C /* ThumbnailHover.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E30C4C1E4073360D7CCC4CF /* ThumbnailHover.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		0359A8A1F791FCA4B662C46A /* CommentsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentsView.swift; sourceTree = "<group>"; };
+		0DF775DA1076B274FFC04B02 /* ThirdPartyNotices.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = ThirdPartyNotices.txt; sourceTree = "<group>"; };
+		0E30C4C1E4073360D7CCC4CF /* ThumbnailHover.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThumbnailHover.swift; sourceTree = "<group>"; };
+		1F102766B01D3223F3AAF8E9 /* LiveLibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveLibraryView.swift; sourceTree = "<group>"; };
+		203FA11002098B15C544D81C /* SessionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionStore.swift; sourceTree = "<group>"; };
+		2468D54C41E9DD248562DEB2 /* iOS.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = iOS.xcassets; sourceTree = "<group>"; };
+		29ED3A1DD5E325132B0C4F7A /* DemoData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoData.swift; sourceTree = "<group>"; };
+		3AD17E02EB7AC783AA9D3B0B /* Slipstream.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Slipstream.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		57BD584144D8B2EDF7EA8CB2 /* LoginNavigationPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginNavigationPolicy.swift; sourceTree = "<group>"; };
+		601A668EC2BA18625B7352F5 /* LiveChat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveChat.swift; sourceTree = "<group>"; };
+		71EF7B32901A614D9BAED32F /* DownloadManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadManager.swift; sourceTree = "<group>"; };
+		7944C6CF1A2E6EE299900750 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		7D4FEB1B685104CF8403AE8D /* Signing.automatic.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Signing.automatic.xcconfig; sourceTree = "<group>"; };
+		83FF96F06F318D64F8242E15 /* FloatplaneAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FloatplaneAPI.swift; sourceTree = "<group>"; };
+		8DEFE5EFC1409C1D07E6E481 /* Signing.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Signing.xcconfig; sourceTree = "<group>"; };
+		92AB97F793B17B067EFD5067 /* TouchVideoPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TouchVideoPlayer.swift; sourceTree = "<group>"; };
+		9724C60C79EEBE1DC5F9495A /* Slipstream-iOS.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = "Slipstream-iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		9CF53FFE345A469236F78555 /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
+		A2EF9506B4C7BE278ED63A42 /* SlipstreamApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlipstreamApp.swift; sourceTree = "<group>"; };
+		AB242B932E00B27F8A458081 /* PlayerSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerSheet.swift; sourceTree = "<group>"; };
+		B3D89271BA8C7B7A7456AA2A /* LoginSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginSheet.swift; sourceTree = "<group>"; };
+		B4A42D5BE1BF20DDC21C4466 /* Emotes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Emotes.swift; sourceTree = "<group>"; };
+		BCB530320DEE1BA101B2CB5F /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+		C66F5D61E57BDC8A23E8EA44 /* EmoteText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmoteText.swift; sourceTree = "<group>"; };
+		D0184CAD8EE88CEAD0D69DC1 /* SearchField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchField.swift; sourceTree = "<group>"; };
+		D4A9F06D2FCF55B9026E24E2 /* AmazonIVSPlayer */ = {isa = PBXFileReference; lastKnownFileType = folder; name = AmazonIVSPlayer; path = Packages/AmazonIVSPlayer; sourceTree = SOURCE_ROOT; };
+		DE183808A16C5C64122E9BCF /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		0F675CA4B8602ECC4FFE91E9 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A47819CDD2320A6DEFB4BDE4 /* SocketIO in Frameworks */,
+				202DDB945EDFF26AC498BFB2 /* AmazonIVSPlayer in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		518F12F7A3D0F5590E66ED6D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2CE0BB0D469B7716F6CAFDB8 /* SocketIO in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		453C489A3502F024F0BD753B /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				D4A9F06D2FCF55B9026E24E2 /* AmazonIVSPlayer */,
+			);
+			path = Packages;
+			sourceTree = "<group>";
+		};
+		5E7E870078AF80447BAEF587 /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				B4A42D5BE1BF20DDC21C4466 /* Emotes.swift */,
+				83FF96F06F318D64F8242E15 /* FloatplaneAPI.swift */,
+				57BD584144D8B2EDF7EA8CB2 /* LoginNavigationPolicy.swift */,
+				BCB530320DEE1BA101B2CB5F /* Models.swift */,
+				203FA11002098B15C544D81C /* SessionStore.swift */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		703945034153983F242BE0CF /* Slipstream */ = {
+			isa = PBXGroup;
+			children = (
+				A5B65B36078907EF1C1BED3A /* App */,
+				5E7E870078AF80447BAEF587 /* Core */,
+				F76B8443953519C5FF6AA965 /* Features */,
+				EA2BBFBD9CE4AF26B525EE60 /* Resources */,
+			);
+			path = Slipstream;
+			sourceTree = "<group>";
+		};
+		A5B65B36078907EF1C1BED3A /* App */ = {
+			isa = PBXGroup;
+			children = (
+				9CF53FFE345A469236F78555 /* AppModel.swift */,
+				A2EF9506B4C7BE278ED63A42 /* SlipstreamApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		B383737008A2376BE0083594 /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				7D4FEB1B685104CF8403AE8D /* Signing.automatic.xcconfig */,
+				8DEFE5EFC1409C1D07E6E481 /* Signing.xcconfig */,
+			);
+			path = Config;
+			sourceTree = "<group>";
+		};
+		BA68E2F06BC8802BF0E6780D = {
+			isa = PBXGroup;
+			children = (
+				B383737008A2376BE0083594 /* Config */,
+				453C489A3502F024F0BD753B /* Packages */,
+				703945034153983F242BE0CF /* Slipstream */,
+				F461937A675A3EF6ED8C75E3 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		EA2BBFBD9CE4AF26B525EE60 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				DE183808A16C5C64122E9BCF /* Assets.xcassets */,
+				2468D54C41E9DD248562DEB2 /* iOS.xcassets */,
+				0DF775DA1076B274FFC04B02 /* ThirdPartyNotices.txt */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		F461937A675A3EF6ED8C75E3 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				9724C60C79EEBE1DC5F9495A /* Slipstream-iOS.app */,
+				3AD17E02EB7AC783AA9D3B0B /* Slipstream.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		F76B8443953519C5FF6AA965 /* Features */ = {
+			isa = PBXGroup;
+			children = (
+				0359A8A1F791FCA4B662C46A /* CommentsView.swift */,
+				7944C6CF1A2E6EE299900750 /* ContentView.swift */,
+				29ED3A1DD5E325132B0C4F7A /* DemoData.swift */,
+				71EF7B32901A614D9BAED32F /* DownloadManager.swift */,
+				C66F5D61E57BDC8A23E8EA44 /* EmoteText.swift */,
+				601A668EC2BA18625B7352F5 /* LiveChat.swift */,
+				1F102766B01D3223F3AAF8E9 /* LiveLibraryView.swift */,
+				B3D89271BA8C7B7A7456AA2A /* LoginSheet.swift */,
+				AB242B932E00B27F8A458081 /* PlayerSheet.swift */,
+				D0184CAD8EE88CEAD0D69DC1 /* SearchField.swift */,
+				0E30C4C1E4073360D7CCC4CF /* ThumbnailHover.swift */,
+				92AB97F793B17B067EFD5067 /* TouchVideoPlayer.swift */,
+			);
+			path = Features;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		83F376BE249626E7E0E23CD8 /* Slipstream */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 9065D54068DBB4DB8A23D6B5 /* Build configuration list for PBXNativeTarget "Slipstream" */;
+			buildPhases = (
+				FEBD34B9BE63BA252A7666B2 /* Sources */,
+				846F69C115F20454A219619B /* Resources */,
+				518F12F7A3D0F5590E66ED6D /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Slipstream;
+			packageProductDependencies = (
+				F2DD3C9664A9F01354F21156 /* SocketIO */,
+			);
+			productName = Slipstream;
+			productReference = 3AD17E02EB7AC783AA9D3B0B /* Slipstream.app */;
+			productType = "com.apple.product-type.application";
+		};
+		CCA15BB7D271FDCF1142CC6C /* Slipstream-iOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 540363468F85153FDA8AA240 /* Build configuration list for PBXNativeTarget "Slipstream-iOS" */;
+			buildPhases = (
+				CBDAD27F77BA7D68CD3A9B11 /* Sources */,
+				C5DD291AB1DE7FAB99B3D843 /* Resources */,
+				0F675CA4B8602ECC4FFE91E9 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "Slipstream-iOS";
+			packageProductDependencies = (
+				6A0C4AAC112D524F5554D6FA /* SocketIO */,
+				E9494A911BF28DDB430123C5 /* AmazonIVSPlayer */,
+			);
+			productName = "Slipstream-iOS";
+			productReference = 9724C60C79EEBE1DC5F9495A /* Slipstream-iOS.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A186B900DFC941163FB1F03C /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					CCA15BB7D271FDCF1142CC6C = {
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = 0B41365D8C1E9C832062FE5D /* Build configuration list for PBXProject "Slipstream" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = BA68E2F06BC8802BF0E6780D;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				099FB3C7E20B1EC6B18915BA /* XCRemoteSwiftPackageReference "socket.io-client-swift" */,
+				15D61FFE6CD7D425F1B7291E /* XCLocalSwiftPackageReference "Packages/AmazonIVSPlayer" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = F461937A675A3EF6ED8C75E3 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				83F376BE249626E7E0E23CD8 /* Slipstream */,
+				CCA15BB7D271FDCF1142CC6C /* Slipstream-iOS */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		846F69C115F20454A219619B /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0C389C6D8617F9A59BB636B5 /* Assets.xcassets in Resources */,
+				408BCF3F6D958ACFC3549E1A /* ThirdPartyNotices.txt in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C5DD291AB1DE7FAB99B3D843 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8FD93CFCE6FEFE2ED1E89E64 /* ThirdPartyNotices.txt in Resources */,
+				BA2F957B492CA7BC99B5BD51 /* iOS.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		CBDAD27F77BA7D68CD3A9B11 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3DAFB3DC3A5E6FB74648ECB6 /* AppModel.swift in Sources */,
+				8B5CED724E93FF0FC00D3A5D /* CommentsView.swift in Sources */,
+				96B3A2CB0C0F6391EADAF1E1 /* ContentView.swift in Sources */,
+				0D6A914CA4B9E7E60DEEBC55 /* DemoData.swift in Sources */,
+				97E872A05EA7722C7C048F8A /* DownloadManager.swift in Sources */,
+				187FEC8B39FA0182AEC937E0 /* EmoteText.swift in Sources */,
+				C6689F520CE50CF2A2033918 /* Emotes.swift in Sources */,
+				CF5CCC7641FFEABBB094F854 /* FloatplaneAPI.swift in Sources */,
+				CD318C6B72E6FA57EC993617 /* LiveChat.swift in Sources */,
+				71740CA900927DB5B4EAEA41 /* LiveLibraryView.swift in Sources */,
+				6E7BE44CE466DC4B524CE7BF /* LoginNavigationPolicy.swift in Sources */,
+				280628833371FBE9C609897D /* LoginSheet.swift in Sources */,
+				22EB248F9048D5C826F80F25 /* Models.swift in Sources */,
+				EE7165DD4B6A754E00EB3CC8 /* PlayerSheet.swift in Sources */,
+				B7B02124EBD3622A412C79C8 /* SearchField.swift in Sources */,
+				137AA411F6A5BA7A08DEAAAF /* SessionStore.swift in Sources */,
+				0BA6BE2E3F2F031F24C2BA9C /* SlipstreamApp.swift in Sources */,
+				659078789DA884CE0440AFB3 /* ThumbnailHover.swift in Sources */,
+				C8D1BD80B7CB34C3C61C410D /* TouchVideoPlayer.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FEBD34B9BE63BA252A7666B2 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				450CA2060564CBDA2C33CDC2 /* AppModel.swift in Sources */,
+				234DC734A2F06250A5C4BB28 /* CommentsView.swift in Sources */,
+				2F21C697E5DCE3AC6809628A /* ContentView.swift in Sources */,
+				083564E65D95D0C16D015C01 /* DemoData.swift in Sources */,
+				9546860412BC4CB294BFE3F5 /* DownloadManager.swift in Sources */,
+				029A70B8DA5BB8942B0EA721 /* EmoteText.swift in Sources */,
+				ACA2893948C9F5F0CBAB6DD6 /* Emotes.swift in Sources */,
+				454A200DCC6B0C6F3B9FD1D8 /* FloatplaneAPI.swift in Sources */,
+				C98376FCFB8EC060199E0C5F /* LiveChat.swift in Sources */,
+				8C523078DF1CE7CD1F53F21A /* LiveLibraryView.swift in Sources */,
+				3F7FFCFF6619482D86E28705 /* LoginNavigationPolicy.swift in Sources */,
+				B602B8AC9D2B1A62E799CC15 /* LoginSheet.swift in Sources */,
+				36C083EF2642EB7C4752585E /* Models.swift in Sources */,
+				41AA099A40B2AE8253859738 /* PlayerSheet.swift in Sources */,
+				590132DBE86C3990DFE69884 /* SearchField.swift in Sources */,
+				2EF6F3E58ED40B5EB51554D5 /* SessionStore.swift in Sources */,
+				053694C6EB8921C25833073D /* SlipstreamApp.swift in Sources */,
+				FEF63D2F7E4F2BF4B5758D0C /* ThumbnailHover.swift in Sources */,
+				9C99DA1B2731FBCFB9CDAAD4 /* TouchVideoPlayer.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		18502FFB3FF0120D211FB249 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 7D4FEB1B685104CF8403AE8D /* Signing.automatic.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Config/iOS.entitlements;
+				INFOPLIST_FILE = "Config/iOS-Info.plist";
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "$(SLIPSTREAM_BUNDLE_ID)";
+				SDKROOT = iphoneos;
+				SUPPORTS_MACCATALYST = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		3A24A1759986E4CF3CA6EEE0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Slipstream;
+				INFOPLIST_KEY_SlipstreamKeychainService = "$(SLIPSTREAM_KEYCHAIN_SERVICE)";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 0.1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		406B4099C3FF39F996CED80E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 8DEFE5EFC1409C1D07E6E481 /* Signing.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Config/macOS.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = "Config/macOS-Info.plist";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.entertainment";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "$(SLIPSTREAM_BUNDLE_ID)";
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		95034C7F2BA33CF673323DEE /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Slipstream;
+				INFOPLIST_KEY_SlipstreamKeychainService = "$(SLIPSTREAM_KEYCHAIN_SERVICE)";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 0.1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		BAC585DC84C40F8DB9BF8102 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 7D4FEB1B685104CF8403AE8D /* Signing.automatic.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Config/macOS.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = "Config/macOS-Info.plist";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.entertainment";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "$(SLIPSTREAM_BUNDLE_ID)";
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		FC4AF962C6A28EE4CFAF2E99 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 7D4FEB1B685104CF8403AE8D /* Signing.automatic.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Config/iOS.entitlements;
+				INFOPLIST_FILE = "Config/iOS-Info.plist";
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "$(SLIPSTREAM_BUNDLE_ID)";
+				SDKROOT = iphoneos;
+				SUPPORTS_MACCATALYST = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		0B41365D8C1E9C832062FE5D /* Build configuration list for PBXProject "Slipstream" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				95034C7F2BA33CF673323DEE /* Debug */,
+				3A24A1759986E4CF3CA6EEE0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		540363468F85153FDA8AA240 /* Build configuration list for PBXNativeTarget "Slipstream-iOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FC4AF962C6A28EE4CFAF2E99 /* Debug */,
+				18502FFB3FF0120D211FB249 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		9065D54068DBB4DB8A23D6B5 /* Build configuration list for PBXNativeTarget "Slipstream" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				406B4099C3FF39F996CED80E /* Debug */,
+				BAC585DC84C40F8DB9BF8102 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		15D61FFE6CD7D425F1B7291E /* XCLocalSwiftPackageReference "Packages/AmazonIVSPlayer" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/AmazonIVSPlayer;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		099FB3C7E20B1EC6B18915BA /* XCRemoteSwiftPackageReference "socket.io-client-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/socketio/socket.io-client-swift";
+			requirement = {
+				kind = exactVersion;
+				version = 16.1.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		6A0C4AAC112D524F5554D6FA /* SocketIO */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 099FB3C7E20B1EC6B18915BA /* XCRemoteSwiftPackageReference "socket.io-client-swift" */;
+			productName = SocketIO;
+		};
+		E9494A911BF28DDB430123C5 /* AmazonIVSPlayer */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = AmazonIVSPlayer;
+		};
+		F2DD3C9664A9F01354F21156 /* SocketIO */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 099FB3C7E20B1EC6B18915BA /* XCRemoteSwiftPackageReference "socket.io-client-swift" */;
+			productName = SocketIO;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = A186B900DFC941163FB1F03C /* Project object */;
+}

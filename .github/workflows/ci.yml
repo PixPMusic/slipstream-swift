@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# PR code runs without signing credentials or a write token. There is no
+# privileged workflow_run/pull_request_target job consuming its artifacts.
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: macos-26
+    timeout-minutes: 30
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - name: Core tests
+        run: swift test
+      - name: Build native macOS without signing
+        run: ./scripts/build.sh macos --unsigned
+      - name: Build iPhone and iPad for Simulator
+        run: ./scripts/build.sh ios

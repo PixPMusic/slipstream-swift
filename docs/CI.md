@@ -1,0 +1,46 @@
+# GitHub Actions
+
+## Pull requests and main
+
+`ci.yml` uses GitHub-hosted macOS runners and Xcode 26.6. It runs the synthetic core tests, an unsigned native Mac compile, and an ad-hoc-signed iOS Simulator compile. A public checkout supplies placeholder identifiers and needs no Apple credentials. No simulator is booted.
+
+The workflow has only `contents: read`, does not persist Git credentials, and receives no signing secrets. There is no privileged `pull_request_target` or `workflow_run` path, shared build cache, or artifact handoff into signing. Fork changes therefore cannot enter the distribution job through a cached build or a PR artifact.
+
+## TestFlight
+
+Create a GitHub environment named **testflight**. Set deployment branch rules to **selected branches**, allowing only **main**, and disallow tag deployment. Add required reviewers if your maintainer setup supports an independent reviewer. Keep distribution credentials in this environment, not repository-wide secrets. Restrict who can push or merge to main using repository rules appropriate to your team.
+
+Environment variables:
+
+| Variable | Value |
+| --- | --- |
+| `APPLE_BUNDLE_ID` | Registered product bundle identifier |
+| `APPLE_TEAM_ID` | Apple developer team |
+| `KEYCHAIN_SERVICE` | Optional existing session service; defaults to bundle ID plus `.session` |
+
+Environment secrets:
+
+| Secret | Value |
+| --- | --- |
+| `DISTRIBUTION_P12_BASE64` | Base64-encoded Apple Distribution certificate and its private key |
+| `DISTRIBUTION_P12_PASSWORD` | P12 password; may be empty for a passwordless P12 |
+| `IOS_PROFILE_BASE64` | Base64-encoded, unexpired App Store profile matching the bundle and team |
+| `ASC_PRIVATE_KEY` | App Store Connect API `.p8` contents |
+| `ASC_KEY_ID` | That API key's ID |
+| `ASC_ISSUER_ID` | That API key's issuer |
+
+Use the narrowest Apple role that supports your upload/provisioning flow. Do not reuse a personal development private key for CI or commit these files. The workflow is intentionally not runnable until its distribution credentials are configured.
+
+From Actions, dispatch **TestFlight** on **main**, supplying a new build number and the marketing version. The workflow checks out that exact commit, validates inputs, runs tests, installs signing credentials into a temporary keychain, archives the native iOS app, and uploads directly to Apple. The profile is checked for team, exact app ID, expiry, and App Store distribution type before installation. An always-run cleanup restores the keychain search list and removes the temporary keychain, profile, P12, and API key. A terminated hosted runner is discarded by GitHub.
+
+The workflow never downloads or signs a PR artifact and never uploads signing materials or signed app archives as GitHub artifacts. After Apple processes the upload, complete compliance and assign the build to your internal group in App Store Connect. This does not publish an App Store release or automatically invite testers.
+
+Local archive/upload remains available through `scripts/testflight.sh`; the CI helper refuses to run outside GitHub Actions. For local use, authenticate in Xcode or pass API authentication paths through the environment.
+
+## Updating dependencies
+
+Actions are pinned to full commit SHAs, and Dependabot proposes monthly updates. Xcode's Swift package lockfile records exact dependency revisions. Review workflow and dependency changes before merging them into the signing branch.
+
+This separation follows the trust boundary used by [T3 Code's macOS preview workflows](https://github.com/pingdotgg/t3code/tree/main/.github/workflows). Slipstream's Swift build is small enough to rebuild trusted main directly, so it does not need T3 Code's two-stage PR artifact packaging system.
+
+References: [GitHub Actions secure use](https://docs.github.com/en/actions/reference/security/secure-use), [deployment environments](https://docs.github.com/en/actions/how-tos/deploy/configure-and-manage-deployments/manage-environments), and [Apple signing on hosted runners](https://docs.github.com/en/actions/how-tos/deploy/deploy-to-third-party-platforms/installing-an-apple-certificate-on-macos-runners-for-xcode-development).

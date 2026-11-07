@@ -1,0 +1,4 @@
+#include "App.xcconfig"
+// Use a persistent identity so Keychain recognizes successive development builds.
+CODE_SIGN_STYLE = Manual
+CODE_SIGN_IDENTITY = $(SLIPSTREAM_DEVELOPMENT_IDENTITY)

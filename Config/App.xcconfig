@@ -1,0 +1,7 @@
+// Public defaults make a clean checkout buildable without a developer account.
+SLIPSTREAM_BUNDLE_ID = com.example.Slipstream
+SLIPSTREAM_KEYCHAIN_SERVICE = $(SLIPSTREAM_BUNDLE_ID).session
+SLIPSTREAM_DEVELOPMENT_IDENTITY = Apple Development
+
+// Personal identifiers and signing configuration belong only in this ignored file.
+#include? "Local.xcconfig"

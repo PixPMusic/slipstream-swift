@@ -1,0 +1,86 @@
+name: Slipstream
+options:
+  bundleIdPrefix: com.example
+  deploymentTarget:
+    macOS: '14.0'
+    iOS: '17.0'
+settings:
+  base:
+    SWIFT_VERSION: '6.0'
+    SWIFT_STRICT_CONCURRENCY: complete
+    MARKETING_VERSION: '0.1.0'
+    CURRENT_PROJECT_VERSION: '1'
+    GENERATE_INFOPLIST_FILE: YES
+    INFOPLIST_KEY_CFBundleDisplayName: Slipstream
+    INFOPLIST_KEY_SlipstreamKeychainService: $(SLIPSTREAM_KEYCHAIN_SERVICE)
+    CODE_SIGN_STYLE: Automatic
+    ENABLE_APP_SANDBOX: YES
+    ENABLE_HARDENED_RUNTIME: YES
+    ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+packages:
+  AmazonIVSPlayer:
+    path: Packages/AmazonIVSPlayer
+  SocketIO:
+    url: https://github.com/socketio/socket.io-client-swift
+    exactVersion: 16.1.1
+targets:
+  Slipstream:
+    configFiles:
+      Debug: Config/Signing.xcconfig
+      Release: Config/Signing.automatic.xcconfig
+    dependencies:
+      - package: SocketIO
+    type: application
+    platform: macOS
+    sources:
+      - path: Slipstream
+        excludes: [Resources/iOS.xcassets]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(SLIPSTREAM_BUNDLE_ID)
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.entertainment
+        CODE_SIGN_ENTITLEMENTS: Config/macOS.entitlements
+    info:
+      path: Config/macOS-Info.plist
+      properties:
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        SlipstreamKeychainService: $(SLIPSTREAM_KEYCHAIN_SERVICE)
+        LSApplicationCategoryType: public.app-category.entertainment
+  Slipstream-iOS:
+    configFiles:
+      Debug: Config/Signing.automatic.xcconfig
+      Release: Config/Signing.automatic.xcconfig
+    dependencies:
+      - package: SocketIO
+      - package: AmazonIVSPlayer
+    type: application
+    platform: iOS
+    sources:
+      - path: Slipstream
+        excludes: [Resources/Assets.xcassets]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(SLIPSTREAM_BUNDLE_ID)
+        CODE_SIGN_ENTITLEMENTS: Config/iOS.entitlements
+        TARGETED_DEVICE_FAMILY: '1,2'
+        SUPPORTS_MACCATALYST: NO
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+    info:
+      path: Config/iOS-Info.plist
+      properties:
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        SlipstreamKeychainService: $(SLIPSTREAM_KEYCHAIN_SERVICE)
+        UIBackgroundModes: [audio]
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait, UIInterfaceOrientationLandscapeLeft, UIInterfaceOrientationLandscapeRight]
+        UISupportedInterfaceOrientations~ipad: [UIInterfaceOrientationPortrait, UIInterfaceOrientationPortraitUpsideDown, UIInterfaceOrientationLandscapeLeft, UIInterfaceOrientationLandscapeRight]
+schemes:
+  Slipstream:
+    build:
+      targets:
+        Slipstream: all
+  Slipstream-iOS:
+    build:
+      targets:
+        Slipstream-iOS: all

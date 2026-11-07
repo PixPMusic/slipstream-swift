@@ -1,0 +1,73 @@
+name: TestFlight
+
+# Signed releases are explicit decisions on a trusted main-branch commit.
+# This deliberately does not reuse PR artifacts or accept arbitrary refs.
+on:
+  workflow_dispatch:
+    inputs:
+      build_number:
+        description: A new, unused build number
+        required: true
+        type: string
+      version:
+        description: Marketing version
+        required: true
+        default: '0.1.0'
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: testflight
+  cancel-in-progress: false
+
+jobs:
+  upload:
+    if: github.ref == 'refs/heads/main'
+    runs-on: macos-26
+    timeout-minutes: 45
+    # Configure this environment to allow main only. Keep all signing secrets
+    # here, not in repository-wide secrets available to other workflows.
+    environment: testflight
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
+      SLIPSTREAM_BUNDLE_ID: ${{ vars.APPLE_BUNDLE_ID }}
+      SLIPSTREAM_KEYCHAIN_SERVICE: ${{ vars.KEYCHAIN_SERVICE }}
+      APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
+      BUILD_NUMBER: ${{ inputs.build_number }}
+      APP_VERSION: ${{ inputs.version }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Validate release inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$BUILD_NUMBER" =~ ^[1-9][0-9]*$ ]] || { echo 'Build number must be a positive integer.' >&2; exit 1; }
+          [[ "$APP_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo 'Version must be X.Y.Z.' >&2; exit 1; }
+          [[ "$SLIPSTREAM_BUNDLE_ID" =~ ^[A-Za-z0-9][A-Za-z0-9.-]+$ ]] || { echo 'Set APPLE_BUNDLE_ID in the testflight environment.' >&2; exit 1; }
+          [[ "$APPLE_TEAM_ID" =~ ^[A-Z0-9]{10}$ ]] || { echo 'Set APPLE_TEAM_ID in the testflight environment.' >&2; exit 1; }
+      - name: Core tests
+        run: swift test
+      - name: Install temporary signing credentials
+        shell: bash
+        env:
+          DISTRIBUTION_P12_BASE64: ${{ secrets.DISTRIBUTION_P12_BASE64 }}
+          DISTRIBUTION_P12_PASSWORD: ${{ secrets.DISTRIBUTION_P12_PASSWORD }}
+          IOS_PROFILE_BASE64: ${{ secrets.IOS_PROFILE_BASE64 }}
+          ASC_PRIVATE_KEY: ${{ secrets.ASC_PRIVATE_KEY }}
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+        run: ./scripts/ci-signing.sh install
+      - name: Archive iPhone and iPad
+        env:
+          APPLE_SIGNING_IDENTITY: Apple Distribution
+        run: ./scripts/testflight.sh archive ios
+      - name: Upload to App Store Connect
+        run: ./scripts/testflight.sh upload ios
+      - name: Remove signing credentials
+        if: always()
+        run: ./scripts/ci-signing.sh cleanup
