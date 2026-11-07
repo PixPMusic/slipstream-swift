@@ -7,6 +7,7 @@ struct ContentView: View {
     @State private var compactPath: [String] = []
     #endif
     @State private var selection = "all"
+    @State private var selectedPost: Post?
     @State private var columnVisibility = NavigationSplitViewVisibility.all
     var body: some View {
         @Bindable var model = model
@@ -19,7 +20,7 @@ struct ContentView: View {
                     NavigationStack(path: $compactPath) {
                         LibrarySidebar(selection: sidebarSelection, navigate: { compactPath = [$0] })
                             .navigationDestination(for: String.self) { value in
-                                LibraryDestination(selection: value)
+                                LibraryDestination(selection: value, selectedPost: $selectedPost)
                             }
                     }
                 } else { splitLibrary }
@@ -28,6 +29,8 @@ struct ContentView: View {
                 #endif
             } else { WelcomeView() }
         }
+        .onChange(of: model.user?.id) { _, _ in selectedPost = nil }
+        .onChange(of: model.demo) { _, _ in selectedPost = nil }
         #if os(iOS)
         .background {
             if #available(iOS 27.1, *) {
@@ -69,7 +72,12 @@ struct ContentView: View {
     // List clears its optional selection when a compact destination is pushed.
     // Keep the active feed so expanding back to two columns restores it.
     private var sidebarSelection: Binding<String?> {
-        Binding(get: { selection }, set: { if let value = $0 { selection = value } })
+        Binding(get: { selection }, set: {
+            if let value = $0, value != selection {
+                selectedPost = nil
+                selection = value
+            }
+        })
     }
 
     private var splitLibrary: some View {
@@ -85,7 +93,7 @@ struct ContentView: View {
                 })
         } detail: {
             NavigationStack {
-                LibraryDestination(selection: selection)
+                LibraryDestination(selection: selection, selectedPost: $selectedPost)
             }.id(selection)
                 .modifier(SwipeSidebarToolbar())
         }
@@ -122,12 +130,13 @@ struct ContentView: View {
 private struct LibraryDestination: View {
     @Environment(AppModel.self) private var model
     let selection: String
+    @Binding var selectedPost: Post?
 
     var body: some View {
         if selection == "live" { LiveLibraryView() }
         else {
             let channel = model.channelsByID[selection]
-            FeedView(creatorID: channel?.creator ?? (selection == "all" ? nil : selection), channel: channel)
+            FeedView(creatorID: channel?.creator ?? (selection == "all" ? nil : selection), channel: channel, selected: $selectedPost)
                 .id("\(model.user?.id ?? "demo")-\(selection)")
         }
     }
@@ -437,7 +446,7 @@ struct FeedView: View {
     @State private var error: String?
     @State private var search = ""
     @State private var requestID = UUID()
-    @State private var selected: Post?
+    @Binding var selected: Post?
     @State private var feedWidth: CGFloat = 0
     @State private var bannerHeight: CGFloat = 0
     @State private var bannerScrolledAway = false
