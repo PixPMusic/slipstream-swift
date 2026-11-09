@@ -505,7 +505,11 @@ struct FeedView: View {
             // SwiftUI can cancel its refresh task as compact scroll content updates.
             await Task { await load(reset: true) }.value
         }
+        #if os(iOS)
+        .modifier(ReadingEdge(reading: banner == nil || bannerScrolledAway))
+        #else
         .modifier(ReadingEdge(reading: banner != nil && bannerScrolledAway))
+        #endif
         .modifier(FeedBannerChrome(title: title, enabled: banner != nil, bannerHeight: bannerHeight, scrolledAway: $bannerScrolledAway))
     }
     private var cardTitleLines: Int {
