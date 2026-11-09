@@ -54,6 +54,10 @@ Comments, reactions, downloads, and live chat use the service's API and subscrip
 
 Authenticated iPad playback, fullscreen transitions, quality changes, sidebar reveal, timeline seeking, and Picture in Picture have been exercised in Simulator. Live WAN playback, 160p/480p quality switching, and the inline menu have also been checked on a physical iPad. Lower live renditions freeze in the current iOS Simulator despite working on hardware. Physical-device AirPlay and iPhone Duo layouts still need runtime verification. macOS browsing, playback, saved-session relaunch, and a downloaded media file have been checked. Simulator and build checks do not establish physical-device behavior.
 
+## CarPlay video (experimental)
+
+CarPlay video browsing uses native lists for subscribed creators, posts, and accessible video attachments on iOS 26.4 or later. It shares the iPhone sign-in and supports the bundled demo. Apple documents CarPlay audio/video apps as the supported route to HomeView; this is not a native HomeView app. See [CarPlay setup and verification](docs/CarPlay.md) for entitlement approval, signing requirements, and outstanding runtime checks.
+
 ## CI and distribution
 
 [CI](.github/workflows/ci.yml) runs core tests and an unsigned iOS Release build. PR jobs have a read-only token and no signing secrets. [TestFlight](.github/workflows/testflight.yml) is a separate manual workflow for an exact `main` commit, using the protected `testflight` environment and temporary signing credentials. It never signs PR artifacts. See [CI setup](docs/CI.md) for required variables, secrets, and branch restrictions.

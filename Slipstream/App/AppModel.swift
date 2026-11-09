@@ -1,9 +1,30 @@
 import SwiftUI
 import Observation
 import Security
+import AVFoundation
 
 @MainActor @Observable final class AppModel {
+    #if os(iOS)
+    /// Phone windows and the CarPlay scene belong to the same signed-in session.
+    static let shared = AppModel()
+    #endif
+    @ObservationIgnored private var initialRestore: Task<Void, Never>?
+    @ObservationIgnored private weak var activePlayer: AVPlayer?
+    @ObservationIgnored private var pauseActivePlayer: (() -> Void)?
     let downloads = DownloadManager()
+
+    func restoreSession() async {
+        if initialRestore == nil {
+            initialRestore = Task { await restore() }
+        }
+        await initialRestore?.value
+    }
+
+    func claimPlayer(_ player: AVPlayer, pause: (() -> Void)? = nil) {
+        if activePlayer !== player { pauseActivePlayer?() }
+        activePlayer = player
+        pauseActivePlayer = pause ?? { [weak player] in player?.pause() }
+    }
     #if DEBUG
     var chatPreview = false
     #endif

@@ -73,6 +73,9 @@ struct PostDetail: Decodable, Sendable {
         guard let order = attachmentOrder else { return files }
         return files.sorted { (order.firstIndex(of: $0.id) ?? Int.max) < (order.firstIndex(of: $1.id) ?? Int.max) }
     }
+    /// Video-only surfaces must preserve editorial order and exclude locked attachments.
+    var playableVideos: [VideoAttachment] { videos.filter { $0.isAccessible != false } }
+
     var videos: [VideoAttachment] {
         let attachments = videoAttachments ?? []
         guard let order = attachmentOrder else { return attachments }

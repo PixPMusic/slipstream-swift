@@ -1,16 +1,17 @@
 import SwiftUI
 
 @main struct SlipstreamApp: App {
+    #if os(iOS)
+    @State private var model = AppModel.shared
+    #else
     @State private var model = AppModel()
-    @State private var startedSessionRestore = false
+    #endif
     var body: some Scene {
         WindowGroup {
             ContentView().environment(model)
                 .tint(.blue)
                 .task {
-                    guard !startedSessionRestore else { return }
-                    startedSessionRestore = true
-                    await model.restore()
+                    await model.restoreSession()
                 }
                 #if os(macOS)
                 .frame(minWidth: 820, minHeight: 580)

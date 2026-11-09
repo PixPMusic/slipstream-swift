@@ -177,6 +177,7 @@ struct PlayerSheet: View {
     @MainActor private func load() async {
         guard let api = model.api else {
             if model.demo, !playback.closed, let url = Bundle.main.url(forResource: "DemoPlayback", withExtension: "mp4") {
+                model.claimPlayer(playback.player)
                 playback.player.replaceCurrentItem(with: AVPlayerItem(url: url))
                 playback.playerReady = true
                 playback.player.play()
@@ -240,6 +241,7 @@ struct PlayerSheet: View {
     }
     @MainActor private func play() {
         guard !playback.closed, let quality = playback.qualities.first(where: { $0.id == playback.qualityID }) else { return }
+        model.claimPlayer(playback.player)
         let time = playback.player.currentTime()
         let resume = playback.player.currentItem == nil || playback.player.rate != 0
         let cookies = model.cookie?.httpCookie.map { [$0] } ?? []
