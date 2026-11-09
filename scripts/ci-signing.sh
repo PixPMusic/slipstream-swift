@@ -38,7 +38,7 @@ if mode == 'cleanup':
             run('security', 'delete-keychain', str(keychain))
         if metadata.get('profile'):
             profile = Path(metadata['profile'])
-            expected = Path.home() / 'Library/MobileDevice/Provisioning Profiles'
+            expected = Path.home() / 'Library/Developer/Xcode/UserData/Provisioning Profiles'
             if profile.parent != expected or profile.suffix not in ('.mobileprovision', '.provisionprofile'):
                 sys.exit('Refusing to remove an unexpected profile path.')
             profile.unlink(missing_ok=True)
@@ -86,7 +86,7 @@ if mode == 'install':
         sys.exit('CI requires a manually managed App Store profile, not an Xcode-managed profile.')
     profile_id = profile['UUID']
     uuid.UUID(profile_id)
-    profile_path = Path.home() / 'Library/MobileDevice/Provisioning Profiles' / f'{profile_id}{profile_suffix}'
+    profile_path = Path.home() / 'Library/Developer/Xcode/UserData/Provisioning Profiles' / f'{profile_id}{profile_suffix}'
     if profile_path.exists():
         sys.exit('Refusing to replace an existing provisioning profile.')
     metadata['profile'] = str(profile_path)

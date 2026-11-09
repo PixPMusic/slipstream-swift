@@ -39,10 +39,10 @@ PY
     [[ -d "$archive_path" ]] || { echo 'Archive not found; run the archive command first.' >&2; exit 1; }
     options="$(mktemp)"
     trap 'rm "$options"' EXIT
-    python3 - "$action" "$archive_path" "$options" <<'PY'
-import os, plistlib, sys
+    python3 - "$action" "$archive_path" "$options" "$platform" <<'PY'
+import os, plistlib, re, subprocess, sys
 from pathlib import Path
-action, archive, output = sys.argv[1:]
+action, archive, output, platform = sys.argv[1:]
 metadata = plistlib.loads((Path(archive) / 'Info.plist').read_bytes())['ApplicationProperties']
 options = plistlib.loads(Path('Config/ExportOptions-AppStore.plist').read_bytes())
 options['destination'] = 'upload' if action == 'upload' else 'export'
@@ -54,6 +54,16 @@ if profile:
     options['signingStyle'] = 'manual'
     options['signingCertificate'] = 'Apple Distribution'
     options['provisioningProfiles'] = {metadata['CFBundleIdentifier']: profile}
+    if platform == 'macos':
+        # Keep app and installer identities distinct during manual Mac export.
+        options['signingCertificate'] = metadata['SigningIdentity']
+        identities = subprocess.check_output(['security', 'find-identity', '-v'], text=True)
+        installers = re.findall(
+            r'([A-F0-9]{40}) "(?:3rd Party Mac Developer Installer|Mac Installer Distribution): [^"]+ \('
+            + re.escape(team) + r'\)"', identities)
+        if len(installers) != 1:
+            sys.exit('Install exactly one Mac Installer Distribution identity for the archive team.')
+        options['installerSigningCertificate'] = installers[0]
 Path(output).write_bytes(plistlib.dumps(options))
 PY
     xcodebuild -exportArchive -archivePath "$archive_path" -exportOptionsPlist "$options" \
