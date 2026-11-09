@@ -27,6 +27,12 @@ jobs:
           persist-credentials: false
       - name: Core tests
         run: swift test
+      - name: Check distribution scripts
+        run: |
+          for script in scripts/*.sh; do bash -n "$script"; done
+          python3 scripts/test-preview-changelog.py
+          python3 scripts/test-sign-mac-preview.py
+          python3 scripts/test-testflight-export.py
       - name: Compile iOS Release without signing
         env:
           SLIPSTREAM_CONFIGURATION: Release
