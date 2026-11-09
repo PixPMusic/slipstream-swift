@@ -4,7 +4,6 @@ struct ContentView: View {
     @Environment(AppModel.self) private var model
     #if os(iOS)
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
-    @State private var compactPath: [String] = []
     #endif
     @State private var selection = "all"
     @State private var selectedPost: PostPlayback?
@@ -15,18 +14,7 @@ struct ContentView: View {
             if model.restoring {
                 ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if model.user != nil || model.demo {
-                #if os(iOS)
-                if usesStack(horizontalSizeClass) {
-                    NavigationStack(path: $compactPath) {
-                        LibrarySidebar(selection: sidebarSelection, navigate: { compactPath = [$0] })
-                            .navigationDestination(for: String.self) { value in
-                                LibraryDestination(selection: value, selectedPost: postSelection)
-                            }
-                    }
-                } else { splitLibrary }
-                #else
-                splitLibrary
-                #endif
+                library
             } else { WelcomeView() }
         }
         .onChange(of: model.user?.id) { _, _ in postSelection.wrappedValue = nil }
@@ -41,9 +29,6 @@ struct ContentView: View {
                     columnVisibility = .detailOnly
                 }
             }
-        }
-        .onChange(of: horizontalSizeClass) { _, sizeClass in
-            if usesStack(sizeClass) { compactPath = [selection] }
         }
         #endif
         #if os(macOS)
@@ -69,14 +54,6 @@ struct ContentView: View {
         } message: { Text(model.error ?? "") }
     }
 
-    #if os(iOS)
-    /// iPhone and Duo navigate with a stack when compact. iPad keeps one split
-    /// view, so collapsing it doesn't replace the feed hierarchy.
-    private func usesStack(_ sizeClass: UserInterfaceSizeClass?) -> Bool {
-        sizeClass == .compact && !Device.isPad
-    }
-    #endif
-
     private var postSelection: Binding<PostPlayback?> {
         Binding(get: { selectedPost }, set: { value in
             if selectedPost !== value { selectedPost?.stop() }
@@ -84,7 +61,11 @@ struct ContentView: View {
         })
     }
 
-    // List clears its optional selection when a compact destination is pushed.
+    private var postPath: Binding<[PostPlayback]> {
+        Binding(get: { selectedPost.map { [$0] } ?? [] }, set: { postSelection.wrappedValue = $0.last })
+    }
+
+    // List clears its optional selection when a collapsed destination is pushed.
     // Keep the active feed so expanding back to two columns restores it.
     private var sidebarSelection: Binding<String?> {
         Binding(get: { selection }, set: {
@@ -95,7 +76,9 @@ struct ContentView: View {
         })
     }
 
-    private var splitLibrary: some View {
+    /// One hierarchy on every device. It collapses into phone-style push and
+    /// Back when narrow, so resizing, rotating, or folding keeps the open feed.
+    private var library: some View {
         NavigationSplitView(columnVisibility: $columnVisibility) {
             LibrarySidebar(selection: sidebarSelection)
                 .modifier(DuoSidebarToolbar())
@@ -107,8 +90,13 @@ struct ContentView: View {
                     }
                 })
         } detail: {
-            NavigationStack {
+            // A value path keeps the post above its feed when the split view
+            // collapses; Back then returns to the feed instead of the sidebar.
+            NavigationStack(path: postPath) {
                 LibraryDestination(selection: selection, selectedPost: postSelection)
+                    .navigationDestination(for: PostPlayback.self) { playback in
+                        PlayerSheet(post: playback.post, playback: playback)
+                    }
             }.id(selection)
                 .modifier(DuoSidebarToolbar())
         }
@@ -327,19 +315,18 @@ private struct FullscreenWindowButtons: NSViewRepresentable {
 private struct LibrarySidebar: View {
     @Environment(AppModel.self) private var model
     @Binding var selection: String?
-    var navigate: ((String) -> Void)? = nil
     var body: some View {
         VStack(spacing: 0) {
             List(selection: $selection) {
-                SidebarRow(value: "all", selection: $selection, navigate: navigate) {
+                NavigationLink(value: "all") {
                     Label("Library", systemImage: "play.rectangle.on.rectangle")
                 }.tag("all")
-                SidebarRow(value: "live", selection: $selection, navigate: navigate) {
+                NavigationLink(value: "live") {
                     Label("Live", systemImage: "dot.radiowaves.left.and.right")
                 }.tag("live")
                 Section {
                     ForEach(model.creators) { creator in
-                        CreatorSidebarBranch(creator: creator, channels: model.channelsByCreator[creator.id] ?? [], selection: $selection, navigate: navigate)
+                        CreatorSidebarBranch(creator: creator, channels: model.channelsByCreator[creator.id] ?? [])
                     }
                 } header: { Text("Creators").foregroundStyle(Color.primary.opacity(0.7)) }
             }
@@ -368,37 +355,20 @@ private struct LibrarySidebar: View {
 private struct CreatorSidebarBranch: View {
     let creator: Creator
     let channels: [CreatorChannel]
-    @Binding var selection: String?
-    var navigate: ((String) -> Void)? = nil
     @State private var expanded = true
     var body: some View {
         DisclosureGroup(isExpanded: $expanded) {
             ForEach(channels) { channel in
-                SidebarRow(value: channel.id, selection: $selection, navigate: navigate) {
+                NavigationLink(value: channel.id) {
                     Label {
                         Text(channel.title).lineLimit(1)
                     } icon: { CreatorAvatar(url: channel.icon?.url, size: 20) }
                 }.tag(channel.id)
             }
         } label: {
-            SidebarRow(value: creator.id, selection: $selection, navigate: navigate) {
+            NavigationLink(value: creator.id) {
                 Label { Text(creator.title) } icon: { CreatorAvatar(url: creator.icon?.url, size: 22) }
             }.tag(creator.id)
-        }
-    }
-}
-
-private struct SidebarRow<Label: View>: View {
-    let value: String
-    @Binding var selection: String?
-    let navigate: ((String) -> Void)?
-    @ViewBuilder var label: () -> Label
-
-    var body: some View {
-        if let navigate {
-            Button { selection = value; navigate(value) } label: { label() }
-        } else {
-            NavigationLink(value: value) { label() }
         }
     }
 }
@@ -530,9 +500,6 @@ struct FeedView: View {
                 if !search.isEmpty { try await Task.sleep(for: .milliseconds(300)) }
                 await load(reset: true)
             } catch {}
-        }
-        .navigationDestination(item: $selected) { playback in
-            PlayerSheet(post: playback.post, playback: playback)
         }
         .refreshable {
             // SwiftUI can cancel its refresh task as compact scroll content updates.
