@@ -4,7 +4,6 @@ struct ContentView: View {
     @Environment(AppModel.self) private var model
     #if os(iOS)
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
-    @State private var compactPath: [String] = []
     #endif
     @State private var selection = "all"
     @State private var selectedPost: PostPlayback?
@@ -15,19 +14,7 @@ struct ContentView: View {
             if model.restoring {
                 ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if model.user != nil || model.demo {
-                #if os(iOS)
-                // Let iPad collapse its split view without replacing the feed hierarchy.
-                if horizontalSizeClass == .compact && UIDevice.current.userInterfaceIdiom != .pad {
-                    NavigationStack(path: $compactPath) {
-                        LibrarySidebar(selection: sidebarSelection, navigate: { compactPath = [$0] })
-                            .navigationDestination(for: String.self) { value in
-                                LibraryDestination(selection: value, selectedPost: postSelection)
-                            }
-                    }
-                } else { splitLibrary }
-                #else
-                splitLibrary
-                #endif
+                library
             } else { WelcomeView() }
         }
         .onChange(of: model.user?.id) { _, _ in postSelection.wrappedValue = nil }
@@ -36,15 +23,12 @@ struct ContentView: View {
         .background {
             if #available(iOS 27.1, *) {
                 DuoHingeObserver {
-                    guard !model.usesSwipeSidebar else { return }
-                    model.usesSwipeSidebar = true
+                    guard !model.isDuo else { return }
+                    model.isDuo = true
                     model.sidebarHidden = true
                     columnVisibility = .detailOnly
                 }
             }
-        }
-        .onChange(of: horizontalSizeClass) { _, sizeClass in
-            if sizeClass == .compact && UIDevice.current.userInterfaceIdiom != .pad { compactPath = [selection] }
         }
         #endif
         #if os(macOS)
@@ -77,7 +61,11 @@ struct ContentView: View {
         })
     }
 
-    // List clears its optional selection when a compact destination is pushed.
+    private var postPath: Binding<[PostPlayback]> {
+        Binding(get: { selectedPost.map { [$0] } ?? [] }, set: { postSelection.wrappedValue = $0.last })
+    }
+
+    // List clears its optional selection when a collapsed destination is pushed.
     // Keep the active feed so expanding back to two columns restores it.
     private var sidebarSelection: Binding<String?> {
         Binding(get: { selection }, set: {
@@ -88,27 +76,34 @@ struct ContentView: View {
         })
     }
 
-    private var splitLibrary: some View {
+    /// One hierarchy on every device. It collapses into phone-style push and
+    /// Back when narrow, so resizing, rotating, or folding keeps the open feed.
+    private var library: some View {
         NavigationSplitView(columnVisibility: $columnVisibility) {
             LibrarySidebar(selection: sidebarSelection)
-                .modifier(SwipeSidebarToolbar())
+                .modifier(DuoSidebarToolbar())
                 .simultaneousGesture(DragGesture().onEnded { value in
-                    if model.usesSwipeSidebar,
+                    if model.isDuo,
                        value.translation.width < -60,
                        abs(value.translation.width) > abs(value.translation.height) {
                         withAnimation { columnVisibility = .detailOnly }
                     }
                 })
         } detail: {
-            NavigationStack {
+            // A value path keeps the post above its feed when the split view
+            // collapses; Back then returns to the feed instead of the sidebar.
+            NavigationStack(path: postPath) {
                 LibraryDestination(selection: selection, selectedPost: postSelection)
+                    .navigationDestination(for: PostPlayback.self) { playback in
+                        PlayerSheet(post: playback.post, playback: playback)
+                    }
             }.id(selection)
-                .modifier(SwipeSidebarToolbar())
+                .modifier(DuoSidebarToolbar())
         }
         .modifier(DuoSidebarLayout())
         #if os(iOS)
         .overlay(alignment: .leading) {
-            if model.usesSwipeSidebar, horizontalSizeClass == .regular, columnVisibility == .detailOnly {
+            if model.isDuo, horizontalSizeClass == .regular, columnVisibility == .detailOnly {
                 Color.clear
                     .frame(width: 24)
                     .contentShape(Rectangle())
@@ -150,10 +145,10 @@ private struct LibraryDestination: View {
     }
 }
 
-private struct SwipeSidebarToolbar: ViewModifier {
+private struct DuoSidebarToolbar: ViewModifier {
     @Environment(AppModel.self) private var model
     @ViewBuilder func body(content: Content) -> some View {
-        if model.usesSwipeSidebar {
+        if model.isDuo {
             content.toolbar(removing: .sidebarToggle)
         } else {
             content
@@ -164,7 +159,7 @@ private struct SwipeSidebarToolbar: ViewModifier {
 private struct DuoSidebarLayout: ViewModifier {
     @Environment(AppModel.self) private var model
     @ViewBuilder func body(content: Content) -> some View {
-        if model.usesSwipeSidebar {
+        if model.isDuo {
             content.navigationSplitViewStyle(.prominentDetail)
         } else {
             content
@@ -320,19 +315,18 @@ private struct FullscreenWindowButtons: NSViewRepresentable {
 private struct LibrarySidebar: View {
     @Environment(AppModel.self) private var model
     @Binding var selection: String?
-    var navigate: ((String) -> Void)? = nil
     var body: some View {
         VStack(spacing: 0) {
             List(selection: $selection) {
-                SidebarRow(value: "all", selection: $selection, navigate: navigate) {
+                NavigationLink(value: "all") {
                     Label("Library", systemImage: "play.rectangle.on.rectangle")
                 }.tag("all")
-                SidebarRow(value: "live", selection: $selection, navigate: navigate) {
+                NavigationLink(value: "live") {
                     Label("Live", systemImage: "dot.radiowaves.left.and.right")
                 }.tag("live")
                 Section {
                     ForEach(model.creators) { creator in
-                        CreatorSidebarBranch(creator: creator, channels: model.channelsByCreator[creator.id] ?? [], selection: $selection, navigate: navigate)
+                        CreatorSidebarBranch(creator: creator, channels: model.channelsByCreator[creator.id] ?? [])
                     }
                 } header: { Text("Creators").foregroundStyle(Color.primary.opacity(0.7)) }
             }
@@ -361,37 +355,20 @@ private struct LibrarySidebar: View {
 private struct CreatorSidebarBranch: View {
     let creator: Creator
     let channels: [CreatorChannel]
-    @Binding var selection: String?
-    var navigate: ((String) -> Void)? = nil
     @State private var expanded = true
     var body: some View {
         DisclosureGroup(isExpanded: $expanded) {
             ForEach(channels) { channel in
-                SidebarRow(value: channel.id, selection: $selection, navigate: navigate) {
+                NavigationLink(value: channel.id) {
                     Label {
                         Text(channel.title).lineLimit(1)
                     } icon: { CreatorAvatar(url: channel.icon?.url, size: 20) }
                 }.tag(channel.id)
             }
         } label: {
-            SidebarRow(value: creator.id, selection: $selection, navigate: navigate) {
+            NavigationLink(value: creator.id) {
                 Label { Text(creator.title) } icon: { CreatorAvatar(url: creator.icon?.url, size: 22) }
             }.tag(creator.id)
-        }
-    }
-}
-
-private struct SidebarRow<Label: View>: View {
-    let value: String
-    @Binding var selection: String?
-    let navigate: ((String) -> Void)?
-    @ViewBuilder var label: () -> Label
-
-    var body: some View {
-        if let navigate {
-            Button { selection = value; navigate(value) } label: { label() }
-        } else {
-            NavigationLink(value: value) { label() }
         }
     }
 }
@@ -469,6 +446,7 @@ struct FeedView: View {
         #endif
         return Array(repeating: GridItem(.flexible(minimum: 0), spacing: 12, alignment: .top), count: count)
     }
+    private var compact: Bool { feedWidth < Breakpoint.compactFeed }
     private var banner: FPImage? { channel?.cover ?? creators.first.flatMap { creatorID == nil ? nil : $0.cover } }
     var body: some View {
         ScrollView {
@@ -514,7 +492,7 @@ struct FeedView: View {
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         #endif
-        .modifier(FeedSearch(text: $search, width: feedWidth < 700 ? 160 : 240, compact: feedWidth < 700, refresh: {
+        .modifier(FeedSearch(text: $search, compact: compact, refresh: {
             Task { await model.loadCreators(); await load(reset: true) }
         }))
         .task(id: [search, channel?.id ?? ""] + creators.map(\.id)) {
@@ -523,22 +501,18 @@ struct FeedView: View {
                 await load(reset: true)
             } catch {}
         }
-        .navigationDestination(item: $selected) { playback in
-            PlayerSheet(post: playback.post, playback: playback)
-        }
         .refreshable {
             // SwiftUI can cancel its refresh task as compact scroll content updates.
             await Task { await load(reset: true) }.value
         }
-        .modifier(ReadingContentClip(reading: banner != nil && bannerScrolledAway))
-        .modifier(ReadingScrollEdge(reading: banner != nil && bannerScrolledAway))
+        .modifier(ReadingEdge(reading: banner != nil && bannerScrolledAway))
         .modifier(FeedBannerChrome(title: title, enabled: banner != nil, bannerHeight: bannerHeight, scrolledAway: $bannerScrolledAway))
     }
     private var cardTitleLines: Int {
         #if os(iOS)
         2
         #else
-        feedWidth < 700 ? 3 : 2
+        compact ? 3 : 2
         #endif
     }
     @MainActor private func load(reset: Bool) async {
@@ -712,7 +686,7 @@ private struct FeedBannerChrome: ViewModifier {
         .modifier(ToolbarTitleVisibility(hidden: enabled && !scrolledAway))
         #else
         // Extend behind navigation buttons, reserving only the phone's camera/status area.
-        .contentMargins(.top, enabled && UIDevice.current.userInterfaceIdiom == .phone ? phoneTopInset : 0, for: .scrollContent)
+        .contentMargins(.top, enabled && Device.isPhone ? phoneTopInset : 0, for: .scrollContent)
         .background { WindowTopInsetReader { phoneTopInset = $0 } }
         .ignoresSafeArea(.container, edges: enabled ? .top : [])
         .toolbarBackground(enabled && !scrolledAway ? .hidden : .automatic, for: .navigationBar)

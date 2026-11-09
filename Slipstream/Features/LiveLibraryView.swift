@@ -46,7 +46,7 @@ struct LivePlayerView: View {
     @State private var selectedArchive: Post?
     var body: some View {
         GeometryReader { geometry in
-            let wide = geometry.size.width >= 850
+            let wide = geometry.size.width >= Breakpoint.sideBySideLive
             let layout = wide ? AnyLayout(HStackLayout(spacing: 0)) : AnyLayout(VStackLayout(spacing: 0))
             layout {
                 LiveVideoView(player: player, presentationChanged: { presentingFullscreen = $0 }, creator: creator, title: stream.title, thumbnail: stream.thumbnail?.url, qualities: qualities, qualityID: Binding(get: { qualityID }, set: { value in
