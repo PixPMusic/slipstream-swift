@@ -99,8 +99,10 @@ password = secrets.token_urlsafe(32)
 run('security', 'create-keychain', '-p', password, str(keychain))
 run('security', 'set-keychain-settings', '-lut', '21600', str(keychain))
 run('security', 'unlock-keychain', '-p', password, str(keychain))
+# Installer export also needs unattended access to its private key.
 run('security', 'import', str(certificate), '-P', os.environ.get('DISTRIBUTION_P12_PASSWORD', ''),
-    '-k', str(keychain), '-T', '/usr/bin/codesign', '-T', '/usr/bin/security')
+    '-k', str(keychain), '-T', '/usr/bin/codesign', '-T', '/usr/bin/security',
+    '-T', '/usr/bin/productbuild', '-T', '/usr/bin/productsign')
 run('security', 'set-key-partition-list', '-S', 'apple-tool:,apple:,codesign:', '-s', '-k', password, str(keychain))
 run('security', 'list-keychains', '-d', 'user', '-s', str(keychain), *metadata['keychains'])
 
