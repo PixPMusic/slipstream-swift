@@ -30,7 +30,8 @@ jobs:
       DEVELOPER_DIR: /Applications/Xcode_27.1.app/Contents/Developer
       APP_VERSION: ${{ inputs.version }}
       BUILD_NUMBER: ${{ inputs.build_number }}
-      SLIPSTREAM_BUNDLE_ID: cc.pixp.Slipstream
+      SLIPSTREAM_BUNDLE_ID: ${{ vars.APPLE_BUNDLE_ID }}
+      SLIPSTREAM_KEYCHAIN_SERVICE: ${{ vars.KEYCHAIN_SERVICE }}
       CI: true
       APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
     steps:
@@ -86,8 +87,20 @@ jobs:
             build-preview/v${{ inputs.version }}-preview.${{ inputs.build_number }}/*.zip
             build-preview/changelog.md
 
-  publish:
+  testflight:
     needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [ios, macos]
+    uses: ./.github/workflows/testflight.yml
+    with:
+      platform: ${{ matrix.platform }}
+      version: ${{ inputs.version }}
+      build_number: ${{ inputs.build_number }}
+
+  publish:
+    needs: [build, testflight]
     runs-on: ubuntu-latest
     permissions:
       contents: write

@@ -42,6 +42,8 @@ Include device, OS, build number, and reproduction steps with feedback. Never in
 
 ## CI
 
+Dispatch **Preview release** to upload both iOS and Mac builds to App Store Connect and publish the GitHub prerelease in one run. The standalone **TestFlight** workflow uploads only the selected platform. Neither submits a public App Store release.
+
 See [CI.md](CI.md). CI distribution uses its own environment credentials, not a developer's local settings or Keychain.
 
 ## Apple references
