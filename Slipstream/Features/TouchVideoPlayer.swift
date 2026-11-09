@@ -43,6 +43,7 @@ import Observation
         if let live, let liveSource {
             live.delegate = self
             live.load(liveSource)
+            claimPlayback()
             live.play()
             routeObservation = NotificationCenter.default.addObserver(forName: AVAudioSession.routeChangeNotification, object: nil, queue: .main) { [weak self] _ in
                 Task { @MainActor [weak self] in self?.updateAirPlayRoute() }
@@ -104,7 +105,14 @@ import Observation
         }
     }
     func setVisible(_ value: Bool) { visible = value; visibilityChanged?(value) }
+    private func claimPlayback() {
+        AppModel.shared.claimPlayer(player, pause: { [weak player, weak live] in
+            player?.pause()
+            live?.pause()
+        })
+    }
     func toggle() {
+        if !playing { claimPlayback() }
         if let live, !casting { playing ? live.pause() : live.play() }
         else { playing ? player.pause() : player.play() }
         reveal()
@@ -149,6 +157,7 @@ import Observation
     }
     func retryLive() {
         guard let live, let liveSource else { return }
+        claimPlayback()
         playbackError = nil; live.load(liveSource); live.play(); reveal()
     }
     func updateAirPlayRoute() {
