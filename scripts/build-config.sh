@@ -11,7 +11,7 @@ cd "$SLIPSTREAM_ROOT"
 if [[ "${CI:-}" != true && -f .env.local ]]; then
   saved_overrides=()
   for key in SLIPSTREAM_BUNDLE_ID SLIPSTREAM_KEYCHAIN_SERVICE APPLE_TEAM_ID \
-    APPLE_SIGNING_IDENTITY APP_VERSION BUILD_NUMBER BUILD_JOBS IOS_PROVISIONING_PROFILE SLIPSTREAM_DERIVED_DATA_PATH \
+    APPLE_SIGNING_IDENTITY APP_VERSION BUILD_NUMBER BUILD_JOBS APPLE_PROVISIONING_PROFILE IOS_PROVISIONING_PROFILE SLIPSTREAM_DERIVED_DATA_PATH \
     SLIPSTREAM_CONFIGURATION SLIPSTREAM_ARCHIVE_PATH SLIPSTREAM_EXPORT_PATH \
     APP_STORE_CONNECT_KEY_PATH APP_STORE_CONNECT_KEY_ID APP_STORE_CONNECT_ISSUER_ID; do
     if [[ -n "${!key+x}" ]]; then saved_overrides+=("$key=${!key}"); fi
@@ -23,9 +23,10 @@ if [[ "${CI:-}" != true && -f .env.local ]]; then
   for entry in ${saved_overrides[@]+"${saved_overrides[@]}"}; do export "${entry?}"; done
 fi
 
+APPLE_PROVISIONING_PROFILE="${APPLE_PROVISIONING_PROFILE:-${IOS_PROVISIONING_PROFILE:-}}"
 build_settings=()
 signing_identity_setting=CODE_SIGN_IDENTITY
-if [[ -n "${IOS_PROVISIONING_PROFILE:-}" ]]; then
+if [[ -n "${APPLE_PROVISIONING_PROFILE:-}" ]]; then
   signing_identity_setting=SLIPSTREAM_CODE_SIGN_IDENTITY
 fi
 for mapping in SLIPSTREAM_BUNDLE_ID:SLIPSTREAM_BUNDLE_ID \
@@ -36,8 +37,8 @@ for mapping in SLIPSTREAM_BUNDLE_ID:SLIPSTREAM_BUNDLE_ID \
   setting="${mapping#*:}"
   if [[ -n "${!name:-}" ]]; then build_settings+=("$setting=${!name}"); fi
 done
-if [[ -n "${IOS_PROVISIONING_PROFILE:-}" ]]; then
-  build_settings+=(SLIPSTREAM_CODE_SIGN_STYLE=Manual "SLIPSTREAM_PROVISIONING_PROFILE=$IOS_PROVISIONING_PROFILE")
+if [[ -n "${APPLE_PROVISIONING_PROFILE:-}" ]]; then
+  build_settings+=(SLIPSTREAM_CODE_SIGN_STYLE=Manual "SLIPSTREAM_PROVISIONING_PROFILE=$APPLE_PROVISIONING_PROFILE")
 fi
 
 provisioning_auth=()

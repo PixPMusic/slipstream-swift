@@ -1,0 +1,110 @@
+name: Preview release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Marketing version (X.Y.Z)
+        required: true
+        default: '0.1.0'
+        type: string
+      build_number:
+        description: Unique positive preview build number
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: preview-release
+  cancel-in-progress: false
+
+jobs:
+  build:
+    if: github.ref == 'refs/heads/main'
+    runs-on: xcode-27
+    timeout-minutes: 60
+    environment: testflight
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_27.1.app/Contents/Developer
+      APP_VERSION: ${{ inputs.version }}
+      BUILD_NUMBER: ${{ inputs.build_number }}
+      SLIPSTREAM_BUNDLE_ID: cc.pixp.Slipstream
+      CI: true
+      APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Validate inputs and check tag is unused
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          [[ "$APP_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          [[ "$BUILD_NUMBER" =~ ^[1-9][0-9]*$ ]]
+          tag="v$APP_VERSION-preview.$BUILD_NUMBER"
+          if git show-ref --verify --quiet "refs/tags/$tag"; then
+            echo 'Tag already exists; use a new build number.' >&2
+            exit 1
+          fi
+      - name: Tests
+        run: |
+          swift test
+          python3 scripts/test-preview-changelog.py
+          python3 scripts/test-sign-mac-preview.py
+      - name: Build and package both apps
+        run: ./scripts/preview-release.sh
+      - name: Install Developer ID signing credentials
+        env:
+          DISTRIBUTION_P12_BASE64: ${{ secrets.DEVELOPER_ID_P12_BASE64 }}
+          DISTRIBUTION_P12_PASSWORD: ${{ secrets.DEVELOPER_ID_P12_PASSWORD }}
+          ASC_PRIVATE_KEY: ${{ secrets.ASC_PRIVATE_KEY }}
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+        run: ./scripts/ci-signing.sh install-developer-id
+      - name: Sign and notarize Mac ZIP
+        run: ./scripts/sign-mac-preview.sh
+      - name: Remove signing credentials
+        if: always()
+        run: ./scripts/ci-signing.sh cleanup
+      - name: Gather commits since the last published release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh api --paginate --slurp "repos/$GITHUB_REPOSITORY/releases?per_page=100" |
+            python3 scripts/preview-changelog.py "$GITHUB_REPOSITORY" > build-preview/changelog.md
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: preview-release
+          if-no-files-found: error
+          path: |
+            build-preview/v${{ inputs.version }}-preview.${{ inputs.build_number }}/*.ipa
+            build-preview/v${{ inputs.version }}-preview.${{ inputs.build_number }}/*.zip
+            build-preview/changelog.md
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      APP_VERSION: ${{ inputs.version }}
+      BUILD_NUMBER: ${{ inputs.build_number }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: preview-release
+          path: release
+      - name: Publish GitHub prerelease
+        run: |
+          set -euo pipefail
+          tag="v$APP_VERSION-preview.$BUILD_NUMBER"
+          gh release create "$tag" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
+            --prerelease --latest=false --title "Slipstream $tag" \
+            --notes-file release/changelog.md \
+            release/changelog.md release/"$tag"/*.ipa release/"$tag"/*.zip

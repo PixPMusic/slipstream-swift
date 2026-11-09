@@ -49,7 +49,7 @@ options['destination'] = 'upload' if action == 'upload' else 'export'
 team = os.environ.get('APPLE_TEAM_ID') or metadata.get('Team')
 if team:
     options['teamID'] = team
-profile = os.environ.get('IOS_PROVISIONING_PROFILE')
+profile = os.environ.get('APPLE_PROVISIONING_PROFILE') or os.environ.get('IOS_PROVISIONING_PROFILE')
 if profile:
     options['signingStyle'] = 'manual'
     options['signingCertificate'] = 'Apple Distribution'

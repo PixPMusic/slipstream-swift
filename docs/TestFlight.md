@@ -10,7 +10,7 @@ BUILD_NUMBER=2 ./scripts/testflight.sh archive ios
 ./scripts/testflight.sh upload ios
 ```
 
-`archive` produces a signed Release archive. `export` creates local distribution files. `upload` exports and uploads the existing archive to App Store Connect. The latter two are alternatives; exporting separately is optional. Use `macos` instead of `ios` for the native Mac target.
+`archive` produces a signed Release archive. `export` creates local distribution files. `upload` exports and uploads the existing archive to App Store Connect. The latter two are alternatives; exporting separately is optional. Use `macos` instead of `ios` for the native Mac target. [TestFlight supports native Mac apps](https://developer.apple.com/help/app-store-connect/test-a-beta-version/testflight-overview/); an App Store release is not required. Add the macOS platform to the App Store Connect app record and create a Mac App Store distribution profile with TestFlight support. Mac export/upload also requires a Mac Installer Distribution certificate and private key. In CI, select `macos` in the TestFlight workflow and configure `MAC_PROFILE_BASE64` plus the installer identity in the distribution P12 (see [CI.md](CI.md)).
 
 Increase `BUILD_NUMBER` for every new upload. Keep `APP_VERSION` stable while testing the same upcoming release: for example, `0.1.0 (1)`, `0.1.0 (2)`, then `0.1.0 (3)`. Change the marketing version when starting a subsequent release. `APP_VERSION` optionally overrides that version. The archive command refuses the public placeholder bundle ID or a missing team. Distribution signing requires current Apple program membership, agreements, and provisioning access; a successful unsigned compile is not an uploadable build.
 
