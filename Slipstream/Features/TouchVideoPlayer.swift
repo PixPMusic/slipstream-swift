@@ -247,6 +247,7 @@ private final class PlaybackSurface: UIView {
     fileprivate var railChanged: ((TouchPlayback, Bool) -> Void)?
     private var hasRail = false
     private var controlInsets: EdgeInsets?
+    private var controlWindowMargin: CGFloat = 0
     private var closing = false
     private var inlineFrame = CGRect.zero
     private var controlArea: UILayoutGuide?
@@ -318,15 +319,16 @@ private final class PlaybackSurface: UIView {
             ? max(12, view.convert(window.safeAreaLayoutGuide.layoutFrame, from: window).minY)
             : max(12, safe.top + 8)
         let insets = EdgeInsets(top: headerTop,
-                                leading: max(16, safe.left + 12, windowMargin),
+                                leading: max(16, safe.left + 12),
                                 bottom: max(12, safe.bottom + 8),
                                 trailing: max(16, safe.right + 12))
         let rail: Bool
         if #available(iOS 27.1, *) { rail = window.traitCollection.verticalBarEdge != .unspecified && (fullscreen || railChanged != nil) }
         else { rail = false }
-        guard controlInsets != insets || hasRail != rail else { return }
+        guard controlInsets != insets || controlWindowMargin != windowMargin || hasRail != rail else { return }
         controlInsets = insets
-        let content = TouchPlayerControls(insets: insets, hasRail: rail, session: session, fullscreen: fullscreen, canPiP: pip != nil,
+        controlWindowMargin = windowMargin
+        let content = TouchPlayerControls(insets: insets, windowMargin: windowMargin, hasRail: rail, session: session, fullscreen: fullscreen, canPiP: pip != nil,
             close: { [weak self] in self?.goBack() }, expand: { [weak self] in self?.toggleFullscreen() },
             pictureInPicture: { [weak self] in self?.togglePiP() })
         if #available(iOS 27.1, *), fullscreen && rail {
@@ -438,6 +440,7 @@ private final class PlaybackSurface: UIView {
 
 private struct TouchPlayerControls: View {
     var insets = EdgeInsets(top: 12, leading: 16, bottom: 12, trailing: 16)
+    var windowMargin: CGFloat = 0
     var hasRail = false
     @Bindable var session: TouchPlayback
     let fullscreen: Bool
@@ -456,7 +459,8 @@ private struct TouchPlayerControls: View {
             let phoneFullscreen = fullscreen && Device.isPhone
             let wideHeader = phoneFullscreen && geometry.size.width > geometry.size.height
             let wideTransport = phoneFullscreen && !wideHeader
-            let headerLeading = wideHeader ? 16 : insets.leading
+            // Only the header shares a row with the iPad window controls.
+            let headerLeading = wideHeader ? 16 : max(insets.leading, windowMargin)
             let headerTrailing = wideHeader ? 16 : insets.trailing
             let transportLeading = wideTransport ? 16 : insets.leading
             let transportTrailing = wideTransport ? 16 : insets.trailing
