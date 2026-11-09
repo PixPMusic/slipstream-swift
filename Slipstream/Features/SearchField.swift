@@ -38,6 +38,7 @@ struct FeedSearch: ViewModifier {
     @Environment(AppModel.self) private var model
     @Binding var text: String
     var width: CGFloat = 240
+    var compact = false
     var refresh: (() -> Void)? = nil
     @State private var focusRequested = false
     func body(content: Content) -> some View {
@@ -75,9 +76,22 @@ struct FeedSearch: ViewModifier {
         }
         #else
         // Keep content actions blue while the system search controls use neutral chrome.
-        content.tint(.blue).searchable(text: $text, prompt: "Search").tint(.primary)
+        if #available(iOS 26.0, *) {
+            searchContent(content)
+                .searchToolbarBehavior(UIDevice.current.userInterfaceIdiom == .pad && compact ? .minimize : .automatic)
+        } else {
+            searchContent(content)
+        }
         #endif
     }
+
+    #if os(iOS)
+    private func searchContent(_ content: Content) -> some View {
+        content.tint(.blue)
+            .searchable(text: $text, placement: UIDevice.current.userInterfaceIdiom == .pad ? .toolbar : .automatic, prompt: "Search")
+            .tint(.primary)
+    }
+    #endif
 }
 
 #if os(macOS)

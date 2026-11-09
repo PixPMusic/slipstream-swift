@@ -303,7 +303,7 @@ struct ReadingScrollEdge: ViewModifier {
     let reading: Bool
     func body(content: Content) -> some View {
         if #available(macOS 26.0, iOS 26.0, *) {
-            content.scrollEdgeEffectStyle(.hard, for: .top).scrollEdgeEffectHidden(!reading, for: .top)
+            content.scrollEdgeEffectStyle(reading ? .hard : .soft, for: .top).scrollEdgeEffectHidden(!reading, for: .top)
         } else { content }
     }
 }

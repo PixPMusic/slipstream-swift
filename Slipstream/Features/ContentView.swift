@@ -16,7 +16,8 @@ struct ContentView: View {
                 ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if model.user != nil || model.demo {
                 #if os(iOS)
-                if horizontalSizeClass == .compact {
+                // Let iPad collapse its split view without replacing the feed hierarchy.
+                if horizontalSizeClass == .compact && UIDevice.current.userInterfaceIdiom != .pad {
                     NavigationStack(path: $compactPath) {
                         LibrarySidebar(selection: sidebarSelection, navigate: { compactPath = [$0] })
                             .navigationDestination(for: String.self) { value in
@@ -43,7 +44,7 @@ struct ContentView: View {
             }
         }
         .onChange(of: horizontalSizeClass) { _, sizeClass in
-            if sizeClass == .compact { compactPath = [selection] }
+            if sizeClass == .compact && UIDevice.current.userInterfaceIdiom != .pad { compactPath = [selection] }
         }
         #endif
         #if os(macOS)
@@ -475,6 +476,12 @@ struct FeedView: View {
                 if let banner, let url = banner.url {
                     ChannelBanner(url: url, aspectRatio: banner.width.flatMap { width in banner.height.map { CGFloat(width) / CGFloat(max(1, $0)) } } ?? 3.83)
                         .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { bannerHeight = $0 }
+                        #if os(iOS)
+                        // Track the banner itself across restored windows and size-class changes.
+                        .onGeometryChange(for: Bool.self) {
+                            $0.frame(in: .named("feedScroll")).maxY < 52
+                        } action: { bannerScrolledAway = $0 }
+                        #endif
                 }
                 LazyVGrid(columns: gridColumns, alignment: .leading, spacing: 18) {
                     ForEach(posts) { post in
@@ -507,7 +514,7 @@ struct FeedView: View {
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         #endif
-        .modifier(FeedSearch(text: $search, width: feedWidth < 700 ? 160 : 240, refresh: {
+        .modifier(FeedSearch(text: $search, width: feedWidth < 700 ? 160 : 240, compact: feedWidth < 700, refresh: {
             Task { await model.loadCreators(); await load(reset: true) }
         }))
         .task(id: [search, channel?.id ?? ""] + creators.map(\.id)) {
@@ -688,11 +695,15 @@ private struct FeedBannerChrome: ViewModifier {
     #endif
     func body(content: Content) -> some View {
         Group {
+            #if os(macOS)
             if #available(macOS 15.0, iOS 18.0, *) {
                 content.onScrollGeometryChange(for: Bool.self) { geometry in
                     enabled && bannerHeight > 0 && geometry.visibleRect.minY > bannerHeight - 52
                 } action: { _, away in scrolledAway = away }
             } else { content }
+            #else
+            content
+            #endif
         }
         #if os(macOS)
         .ignoresSafeArea(.container, edges: enabled || model.windowFullscreen ? .top : [])
