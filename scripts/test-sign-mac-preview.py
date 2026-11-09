@@ -17,7 +17,7 @@ class SigningTests(unittest.TestCase):
             scripts.mkdir()
             for name in ('build-config.sh', 'sign-mac-preview.sh'):
                 shutil.copy(source / name, scripts / name)
-            app = root / 'build-preview/v1.2.3-preview.4/macos/Build/Products/Release/Slipstream.app'
+            app = root / 'build-preview/v1.2.3-preview.4/macos/Slipstream.app'
             (app / 'Contents/Frameworks/Fixture.framework').mkdir(parents=True)
             commands = root / 'commands'
             commands.mkdir()

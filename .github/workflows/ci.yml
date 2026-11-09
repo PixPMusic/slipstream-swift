@@ -30,6 +30,7 @@ jobs:
       - name: Check distribution scripts
         run: |
           for script in scripts/*.sh; do bash -n "$script"; done
+          python3 scripts/test-preview-packaging.py
           python3 scripts/test-preview-changelog.py
           python3 scripts/test-sign-mac-preview.py
           python3 scripts/test-testflight-export.py

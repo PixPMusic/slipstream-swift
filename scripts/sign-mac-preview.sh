@@ -11,7 +11,7 @@ source "$(dirname "$0")/build-config.sh"
 [[ "$BUILD_NUMBER" =~ ^[1-9][0-9]*$ ]] || exit 2
 tag="v$APP_VERSION-preview.$BUILD_NUMBER"
 output="$SLIPSTREAM_ROOT/build-preview/$tag"
-app="$output/macos/Build/Products/Release/Slipstream.app"
+app="$output/macos/Slipstream.app"
 zip="$output/Slipstream-$tag-macOS.zip"
 # Pin the identity to this team; never fall back to development or ad-hoc signing.
 identity="$(security find-identity -v -p codesigning | python3 -c '
