@@ -3,6 +3,17 @@ name: TestFlight
 # Signed releases are explicit decisions on a trusted main-branch commit.
 # This deliberately does not reuse PR artifacts or accept arbitrary refs.
 on:
+  workflow_call:
+    inputs:
+      platform:
+        required: true
+        type: string
+      build_number:
+        required: true
+        type: string
+      version:
+        required: true
+        type: string
   workflow_dispatch:
     inputs:
       platform:
@@ -25,7 +36,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: testflight
+  group: testflight-${{ inputs.platform }}
   cancel-in-progress: false
 
 jobs:
@@ -53,6 +64,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          [[ "$PLATFORM" == ios || "$PLATFORM" == macos ]] || { echo 'Platform must be ios or macos.' >&2; exit 1; }
           [[ "$BUILD_NUMBER" =~ ^[1-9][0-9]*$ ]] || { echo 'Build number must be a positive integer.' >&2; exit 1; }
           [[ "$APP_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo 'Version must be X.Y.Z.' >&2; exit 1; }
           [[ "$SLIPSTREAM_BUNDLE_ID" =~ ^[A-Za-z0-9][A-Za-z0-9.-]+$ ]] || { echo 'Set APPLE_BUNDLE_ID in the testflight environment.' >&2; exit 1; }
@@ -73,7 +85,12 @@ jobs:
       - name: Archive selected app
         env:
           APPLE_SIGNING_IDENTITY: Apple Distribution
-        run: ./scripts/testflight.sh archive "$PLATFORM"
+        run: |
+          if [[ "$PLATFORM" == macos ]]; then
+            ./scripts/testflight.sh archive macos 'ARCHS=arm64 x86_64' ONLY_ACTIVE_ARCH=NO
+          else
+            ./scripts/testflight.sh archive ios
+          fi
       - name: Upload to App Store Connect
         run: ./scripts/testflight.sh upload "$PLATFORM"
       - name: Remove signing credentials

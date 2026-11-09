@@ -53,10 +53,12 @@ References: [GitHub Actions secure use](https://docs.github.com/en/actions/refer
 ## Preview releases
 
 Dispatch **Preview release** on **main** with a marketing version (`X.Y.Z`) and
-unique positive build number. It tests and builds both apps from that exact
-commit before installing Apple credentials, signs and notarizes the Mac app,
-then publishes `vX.Y.Z-preview.N` as a GitHub
-prerelease (never the latest stable release). Existing tags are rejected.
+a positive build number unused on both Apple platforms. One dispatch tests and
+builds both apps from that exact commit, signs and notarizes the Mac download,
+archives and uploads **both iOS and macOS to App Store Connect for TestFlight**,
+then publishes `vX.Y.Z-preview.N` as a GitHub prerelease (never the latest stable
+release). The same version/build number is used everywhere. Existing tags are
+rejected; choose a fresh build number for each attempt.
 
 Assets are `Slipstream-vX.Y.Z-preview.N-altstore.ipa`,
 `Slipstream-vX.Y.Z-preview.N-macOS.zip`, and `changelog.md`. The notes and Markdown
@@ -71,10 +73,23 @@ installer's Apple identity. It is not an App Store export encrypted with FairPla
 The Mac ZIP contains a universal Apple Silicon/Intel app signed with Developer
 ID Application, notarized by Apple, and stapled before the final ZIP is created.
 Signature verification, accepted notarization, ticket validation, and Gatekeeper
-assessment must all succeed before publication. This workflow does not upload
-either app to TestFlight.
+assessment must all succeed before publication. After packaging, a two-platform
+matrix calls the reusable TestFlight workflow to rebuild signed App Store
+archives from the same commit. Both Apple uploads must succeed before the GitHub
+prerelease is published. Each platform has its own temporary signing keychain,
+profile, and cleanup on an isolated runner. Uploads to the same Apple platform
+are serialized with standalone TestFlight runs.
 
-The preview build job uses the main-only **testflight** environment for its
+Apple uploads cannot be rolled back as a single transaction. If one upload fails,
+the other may already be in App Store Connect; no GitHub release is published.
+Use a fresh build number when retrying. Apple processing, tester-group assignment,
+and beta review still apply after successful uploads. This does not submit a
+public App Store release. The standalone **TestFlight** workflow remains available
+for uploading only one platform.
+
+The preview build and Apple upload jobs use the main-only **testflight** environment.
+Apple uploads use the distribution P12 and both platform profiles documented
+above. The preview build uses its
 existing App Store Connect key and team variable. Add `DEVELOPER_ID_P12_BASE64`
 (Developer ID Application certificate **and private key**) and
 `DEVELOPER_ID_P12_PASSWORD`. This is a different identity from Apple Distribution
