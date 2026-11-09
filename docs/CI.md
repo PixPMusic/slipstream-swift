@@ -67,16 +67,20 @@ release, including earlier previews. The first release includes all history.
 The workflow fails if the previous release tag is missing or is not an ancestor
 of the selected commit, rather than silently producing incomplete notes.
 
-The IPA is a separate unsigned device build, with vendor signatures and embedded
-profiles removed from the packaging copy. AltStore must sign it using the
+Each platform is compiled exactly once as a signed App Store archive. The IPA
+is a copy of the archived iOS app, with signatures and embedded profiles removed
+from the packaging copy. AltStore must sign it using the
 installer's Apple identity. It is not an App Store export encrypted with FairPlay.
 The Mac ZIP contains a universal Apple Silicon/Intel app signed with Developer
 ID Application, notarized by Apple, and stapled before the final ZIP is created.
 Signature verification, accepted notarization, ticket validation, and Gatekeeper
-assessment must all succeed before publication. After packaging, a two-platform
-matrix calls the reusable TestFlight workflow to rebuild signed App Store
-archives from the same commit. Both Apple uploads must succeed before the GitHub
-prerelease is published. Each platform has its own temporary signing keychain,
+assessment must all succeed before publication. Each native matrix job reads
+signing secrets directly from the protected environment, archives its platform
+once, makes a preview copy, and uploads that same original archive to Apple. The
+Mac copy is re-signed with Developer ID after removing its App Store profile; the
+original archive retains its App Store signature. Both Apple uploads and all
+preview packaging must succeed before the GitHub prerelease is published.
+Each platform has its own temporary signing keychain,
 profile, and cleanup on an isolated runner. Uploads to the same Apple platform
 are serialized with standalone TestFlight runs.
 
@@ -87,31 +91,34 @@ and beta review still apply after successful uploads. This does not submit a
 public App Store release. The standalone **TestFlight** workflow remains available
 for uploading only one platform.
 
-The preview build and Apple upload jobs use the main-only **testflight** environment.
-Apple uploads use the distribution P12 and both platform profiles documented
-above. The preview build uses its
-existing App Store Connect key and team variable. Add `DEVELOPER_ID_P12_BASE64`
+Both platform jobs use the main-only **testflight** environment, its App Store
+Connect key and team variable, and the distribution P12 and platform profiles
+documented above. Add `DEVELOPER_ID_P12_BASE64`
 (Developer ID Application certificate **and private key**) and
 `DEVELOPER_ID_P12_PASSWORD`. This is a different identity from Apple Distribution
 and Mac Installer Distribution; neither of those can sign a direct-download app.
 The API key must have access to notarization. The temporary credential helper
-imports this identity without requiring an App Store provisioning profile and
-always cleans it up, including on notarization failure. Missing credentials or
+switches the Mac runner from App Store credentials to this identity without
+requiring a Developer ID provisioning profile, and always cleans it up, including on notarization failure. Missing credentials or
 notarization rejection fail the release; there is no unsigned fallback.
 
 Build artifacts contain only the packages and changelog. A separate Linux job
-gets `contents: write` to create the release; the Mac build job has a read token
-and receives signing secrets only in the credential-install step. No PR artifacts feed this path. Local unsigned/ad-hoc packaging is:
+gets `contents: write` to create the release; the native jobs have read tokens
+and receive signing secrets only in credential-install steps. No PR artifacts
+feed this path. To package an existing signed archive locally,
+use its matching version/build number:
 
 ```sh
 CI=true APP_VERSION=0.1.0 BUILD_NUMBER=1 SLIPSTREAM_BUNDLE_ID=cc.pixp.Slipstream \
-  ./scripts/preview-release.sh
+  ./scripts/preview-release.sh ios
 ```
 
 Output is under ignored `build-preview/v0.1.0-preview.1/`; use a fresh build number
-or remove your previous disposable output before rebuilding it. To sign that
-local package, run `scripts/sign-mac-preview.sh` with the same version/build,
+or remove your previous disposable output before packaging it again. Run
+`preview-release.sh macos` to copy the Mac archive, then
+`scripts/sign-mac-preview.sh` with the same version/build,
 `APPLE_TEAM_ID`, a locally installed Developer ID Application identity, and the
 three App Store Connect authentication variables from Configuration.md. The
-local packaging command alone remains ad-hoc signed and unnotarized.
+Mac copy is not ready for direct distribution until the signing/notarization
+command succeeds. Neither packaging command compiles the app.
 AltStore install and Apple processing still need real-device verification.

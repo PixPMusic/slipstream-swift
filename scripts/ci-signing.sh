@@ -44,6 +44,8 @@ if mode == 'cleanup':
             profile.unlink(missing_ok=True)
     if directory.exists():
         shutil.rmtree(directory)
+    with open(os.environ['GITHUB_ENV'], 'a') as output:
+        output.write('APPLE_PROVISIONING_PROFILE=\n')
     sys.exit(0)
 
 if mode not in ('install', 'install-developer-id'):

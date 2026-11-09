@@ -9,7 +9,7 @@ on:
         default: '0.1.0'
         type: string
       build_number:
-        description: Unique positive preview build number
+        description: Positive build number unused on both Apple platforms
         required: true
         type: string
 
@@ -21,27 +21,19 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  build:
+  prepare:
     if: github.ref == 'refs/heads/main'
-    runs-on: xcode-27
-    timeout-minutes: 60
-    environment: testflight
+    runs-on: ubuntu-latest
     env:
-      DEVELOPER_DIR: /Applications/Xcode_27.1.app/Contents/Developer
       APP_VERSION: ${{ inputs.version }}
       BUILD_NUMBER: ${{ inputs.build_number }}
-      SLIPSTREAM_BUNDLE_ID: ${{ vars.APPLE_BUNDLE_ID }}
-      SLIPSTREAM_KEYCHAIN_SERVICE: ${{ vars.KEYCHAIN_SERVICE }}
-      CI: true
-      APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
+      GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           fetch-depth: 0
           persist-credentials: false
       - name: Validate inputs and check tag is unused
-        env:
-          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           [[ "$APP_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
@@ -51,14 +43,72 @@ jobs:
             echo 'Tag already exists; use a new build number.' >&2
             exit 1
           fi
-      - name: Tests
+      - name: Gather commits since the last published release
         run: |
-          swift test
-          python3 scripts/test-preview-changelog.py
-          python3 scripts/test-sign-mac-preview.py
-      - name: Build and package both apps
-        run: ./scripts/preview-release.sh
+          set -euo pipefail
+          gh api --paginate --slurp "repos/$GITHUB_REPOSITORY/releases?per_page=100" |
+            python3 scripts/preview-changelog.py "$GITHUB_REPOSITORY" > changelog.md
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: preview-changelog
+          path: changelog.md
+          if-no-files-found: error
+
+  build:
+    needs: prepare
+    runs-on: xcode-27
+    timeout-minutes: 60
+    environment: testflight
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [ios, macos]
+    concurrency:
+      group: testflight-${{ matrix.platform }}
+      cancel-in-progress: false
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_27.1.app/Contents/Developer
+      APP_VERSION: ${{ inputs.version }}
+      BUILD_NUMBER: ${{ inputs.build_number }}
+      PLATFORM: ${{ matrix.platform }}
+      SLIPSTREAM_BUNDLE_ID: ${{ vars.APPLE_BUNDLE_ID }}
+      SLIPSTREAM_KEYCHAIN_SERVICE: ${{ vars.KEYCHAIN_SERVICE }}
+      APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Core tests
+        run: swift test
+      - name: Install App Store signing credentials
+        env:
+          DISTRIBUTION_P12_BASE64: ${{ secrets.DISTRIBUTION_P12_BASE64 }}
+          DISTRIBUTION_P12_PASSWORD: ${{ secrets.DISTRIBUTION_P12_PASSWORD }}
+          IOS_PROFILE_BASE64: ${{ secrets.IOS_PROFILE_BASE64 }}
+          MAC_PROFILE_BASE64: ${{ secrets.MAC_PROFILE_BASE64 }}
+          ASC_PRIVATE_KEY: ${{ secrets.ASC_PRIVATE_KEY }}
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+        run: ./scripts/ci-signing.sh install "$PLATFORM"
+      - name: Archive once
+        env:
+          APPLE_SIGNING_IDENTITY: Apple Distribution
+        run: |
+          if [[ "$PLATFORM" == macos ]]; then
+            ./scripts/testflight.sh archive macos 'ARCHS=arm64 x86_64' ONLY_ACTIVE_ARCH=NO
+          else
+            ./scripts/testflight.sh archive ios
+          fi
+      - name: Make preview copy from the archive
+        run: ./scripts/preview-release.sh "$PLATFORM"
+      - name: Upload the same archive to App Store Connect
+        run: ./scripts/testflight.sh upload "$PLATFORM"
+      - name: Remove App Store signing credentials
+        if: always()
+        run: ./scripts/ci-signing.sh cleanup
       - name: Install Developer ID signing credentials
+        if: matrix.platform == 'macos'
         env:
           DISTRIBUTION_P12_BASE64: ${{ secrets.DEVELOPER_ID_P12_BASE64 }}
           DISTRIBUTION_P12_PASSWORD: ${{ secrets.DEVELOPER_ID_P12_PASSWORD }}
@@ -66,41 +116,22 @@ jobs:
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
           ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
         run: ./scripts/ci-signing.sh install-developer-id
-      - name: Sign and notarize Mac ZIP
+      - name: Sign and notarize the Mac preview copy
+        if: matrix.platform == 'macos'
         run: ./scripts/sign-mac-preview.sh
-      - name: Remove signing credentials
-        if: always()
+      - name: Remove Developer ID signing credentials
+        if: always() && matrix.platform == 'macos'
         run: ./scripts/ci-signing.sh cleanup
-      - name: Gather commits since the last published release
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-          gh api --paginate --slurp "repos/$GITHUB_REPOSITORY/releases?per_page=100" |
-            python3 scripts/preview-changelog.py "$GITHUB_REPOSITORY" > build-preview/changelog.md
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: preview-release
+          name: preview-${{ matrix.platform }}
           if-no-files-found: error
           path: |
             build-preview/v${{ inputs.version }}-preview.${{ inputs.build_number }}/*.ipa
             build-preview/v${{ inputs.version }}-preview.${{ inputs.build_number }}/*.zip
-            build-preview/changelog.md
-
-  testflight:
-    needs: build
-    strategy:
-      fail-fast: false
-      matrix:
-        platform: [ios, macos]
-    uses: ./.github/workflows/testflight.yml
-    with:
-      platform: ${{ matrix.platform }}
-      version: ${{ inputs.version }}
-      build_number: ${{ inputs.build_number }}
 
   publish:
-    needs: [build, testflight]
+    needs: [prepare, build]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -111,7 +142,8 @@ jobs:
     steps:
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
-          name: preview-release
+          pattern: preview-*
+          merge-multiple: true
           path: release
       - name: Publish GitHub prerelease
         run: |
@@ -120,4 +152,4 @@ jobs:
           gh release create "$tag" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
             --prerelease --latest=false --title "Slipstream $tag" \
             --notes-file release/changelog.md \
-            release/changelog.md release/"$tag"/*.ipa release/"$tag"/*.zip
+            release/changelog.md release/*.ipa release/*.zip
